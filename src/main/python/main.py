@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 import argparse
 from classes.Generator import Generator
+from simulation.box2d_simulator.TaskSimulator import TaskSimulator
 
 
 def get_config_from_args():
@@ -17,9 +18,15 @@ def get_config_from_args():
 def main():
     config = get_config_from_args()
     generator = Generator(config)
-    action = generator.get_action()
+
     print("Tasks loaded: ")
     print(generator.tasks)
+
+    simulator = TaskSimulator()
+    for task in generator.tasks:
+        print(simulator.add_task(task))
+    action = generator.get_action()
+
 
 
 if __name__ == '__main__':

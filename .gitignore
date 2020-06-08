@@ -56,3 +56,6 @@ notebook/
 
 # IDE
 .idea/
+
+# MacOS
+.DS_STORE
