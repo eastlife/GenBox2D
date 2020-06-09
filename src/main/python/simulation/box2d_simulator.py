@@ -3,8 +3,8 @@ from Box2D.examples.framework import (Framework, Keys, main)
 from Box2D import (b2FixtureDef, b2PolygonShape, b2CircleShape,
                    b2Transform, b2Mul,
                    b2_pi)
-import os
-os.environ["SDL_VIDEODRIVER"] = "dummy"
+# import os
+# os.environ["SDL_VIDEODRIVER"] = "dummy"
 
 class TaskSimulator (Framework):
     name = "TwoBallExample"
@@ -37,11 +37,13 @@ class TaskSimulator (Framework):
         featurized_objects = task.initial_featurized_objects
         for i in range(featurized_objects.num_objects):
             shape = featurized_objects.shapes[i]
-            print(shape)
+            print("shape: " + shape)
             color = featurized_objects.colors[i]
-            print(color)
+            print("color: " + color)
             state = featurized_objects.states[0][i]
+            print("state: ")
             print(state)
+
 
     def Keyboard(self, key):
         if not self.body:

@@ -1,15 +1,14 @@
 #!/usr/bin/env python
 import argparse
 from classes.Generator import Generator
-from simulation.box2d_simulator.TaskSimulator import TaskSimulator
 
 
 def get_config_from_args():
     parser = argparse.ArgumentParser()
-    parser.add_argument("--start_template_id", help="start template id", type=int)
-    parser.add_argument("--end_template_id", help="end template id", type=int)
-    parser.add_argument("--num_modifications", help="num_modifications", type=int)
-    parser.add_argument("--action_tier", help="action tier <ball/two_balls>")
+    parser.add_argument("--start_template_id", help="start template id", type=int, default="0")
+    parser.add_argument("--end_template_id", help="end template id", type=int, default="0")
+    parser.add_argument("--num_modifications", help="num_modifications", type=int, default="1")
+    parser.add_argument("--action_tier", help="action tier <ball/two_balls>", default="ball")
 
     config = parser.parse_args()
     return config
@@ -22,9 +21,11 @@ def main():
     print("Tasks loaded: ")
     print(generator.tasks)
 
+    from simulation.box2d_simulator import TaskSimulator
+
     simulator = TaskSimulator()
     for task in generator.tasks:
-        print(simulator.add_task(task))
+        simulator.add_task(task)
     action = generator.get_action()
 
 
