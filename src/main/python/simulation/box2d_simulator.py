@@ -40,10 +40,46 @@ class TaskSimulator (Framework):
             print("shape: " + shape)
             color = featurized_objects.colors[i]
             print("color: " + color)
+            diameter = featurized_objects.diameters[i]
+            print("diameter: " + str(diameter))
             state = featurized_objects.states[0][i]
             print("state: ")
             print(state)
+            x = state[0]
+            y = state[1]
+            angle = state[2]
 
+            isDynamic = None
+            if color == "GRAY":
+                # Gray for dynamic objects
+                isDynamic = True
+            elif color == "GREEN":
+                # Green for dynamic balls
+                isDynamic = True
+            elif color == "BLUE":
+                # Blue for dynamic balls
+                isDynamic = True
+            elif color == "RED":
+                # Red for dynamic action balls
+            elif color == "BLACK":
+                # Black for static objects
+                isDynamic = False
+
+            if shape == "BALL":
+                if isDynamic:
+                    fixture = b2FixtureDef(shape=b2CircleShape(radius=1.0),
+                                            density=1, friction=0.3, restitution=0.5)
+                    self.world.CreateDynamicBody(position=(x * self.SCENE_WIDTH, y * self.SCENE_HEIGHT), fixtures=fixture)
+                else:
+                    self.world.CreateStaticBody(shapes=b2CircleShape(radius=1.0))
+            elif shape == "BAR":
+                pass
+            elif shape == "JAR":
+                pass
+            elif shape == "STANDINGSTICKS":
+                pass
+            else:
+                raise NotImplementedError
 
     def Keyboard(self, key):
         if not self.body:
