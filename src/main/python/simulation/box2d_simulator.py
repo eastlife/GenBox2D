@@ -61,6 +61,7 @@ class TaskSimulator (Framework):
                 isDynamic = True
             elif color == "RED":
                 # Red for dynamic action balls
+                isDynamic = True
             elif color == "BLACK":
                 # Black for static objects
                 isDynamic = False
