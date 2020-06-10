@@ -28,6 +28,9 @@ class TaskSimulator (Framework):
              (-self.SCENE_WIDTH / 2, -self.SCENE_HEIGHT / 2)]
         )
 
+        self.task = None
+        self.bodies = []
+
         # fixtures = b2FixtureDef(shape=b2CircleShape(radius=1.0),
         #                         density=1, friction=0.3, restitution=0.5)
         #
@@ -70,10 +73,12 @@ class TaskSimulator (Framework):
             if shape == "BALL":
                 if isDynamic:
                     fixture = b2FixtureDef(shape=b2CircleShape(radius=1.0),
-                                            density=1, friction=0.3, restitution=0.5)
-                    self.world.CreateDynamicBody(position=(x * self.SCENE_WIDTH, y * self.SCENE_HEIGHT), fixtures=fixture)
+                                            density=1, friction=0.3, restitution=0.8)
+                    body = self.world.CreateDynamicBody(position=(x * self.SCENE_WIDTH, y * self.SCENE_HEIGHT), fixtures=fixture)
+                    self.bodies.append(body)
                 else:
-                    self.world.CreateStaticBody(shapes=b2CircleShape(radius=1.0))
+                    body = self.world.CreateStaticBody(shapes=b2CircleShape(radius=1.0))
+                    self.bodies.append(body)
             elif shape == "BAR":
                 pass
             elif shape == "JAR":
@@ -83,6 +88,8 @@ class TaskSimulator (Framework):
             else:
                 raise NotImplementedError
 
+        self.task = task
+
     def Keyboard(self, key):
         if not self.body:
             return
@@ -90,6 +97,32 @@ class TaskSimulator (Framework):
         if key == Keys.K_w:
             pass
 
+    def run(self):
+        if self.task is None:
+            raise Exception
+        timeStep = 1.0 / 60
+        vel_iters, pos_iters = 6, 2
+
+        # print inital positions
+        self.print_bodies()
+
+        for i in range(600):
+            # Instruct the world to perform a single step of simulation. It is
+            # generally best to keep the time step and iterations fixed.
+            self.world.Step(timeStep, vel_iters, pos_iters)
+
+            # Clear applied body forces. We didn't apply any forces, but you
+            # should know about this function.
+            self.world.ClearForces()
+        
+            # Now print the position and angle of the body.
+            self.print_bodies()
+
+    def print_bodies(self):
+        print(len(self.bodies), end =" ")
+        for body in self.bodies:
+            print(body.position, body.angle, end =" ")
+        print()
 
 # if __name__ == "__main__":
 #     main(TaskSimulator)
