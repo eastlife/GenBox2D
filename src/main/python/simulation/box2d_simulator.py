@@ -3,6 +3,7 @@ from Box2D.examples.framework import (Framework, Keys, main)
 from Box2D import (b2FixtureDef, b2PolygonShape, b2CircleShape,
                    b2Transform, b2Mul,
                    b2_pi)
+
 # import os
 # os.environ["SDL_VIDEODRIVER"] = "dummy"
 
@@ -90,5 +91,5 @@ class TaskSimulator (Framework):
             pass
 
 
-if __name__ == "__main__":
-    main(TaskSimulator)
+# if __name__ == "__main__":
+#     main(TaskSimulator)
