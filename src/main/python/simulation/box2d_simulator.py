@@ -2,11 +2,24 @@ from Box2D.examples.framework import (Framework, Keys, main)
 
 from Box2D import (b2FixtureDef, b2PolygonShape, b2CircleShape,
                    b2Transform, b2Mul,
-                   b2_pi)
+                   b2_pi, b2ContactListener)
 
 # import os
 # os.environ["SDL_VIDEODRIVER"] = "dummy"
+class MyListener (b2ContactListener):
+    def BeginContact(self, contact):
+        print(contact)
+        print("Begin")
 
+    def EndContact(self, contact):
+        print("End")
+
+    def PreSolve(self, contact, oldManifold):
+        print("PreSolve")
+
+    def PostSolve(self, contact, impulse):
+        print("PostSolve")
+        print(impulse)
 class TaskSimulator (Framework):
     name = "TwoBallExample"
     description = "A simple example to simulate two balls in the scene and another ball of action."
@@ -14,6 +27,7 @@ class TaskSimulator (Framework):
     def __init__(self):
         super(TaskSimulator, self).__init__()
         self.world.gravity = (0.0, -10.0)
+        self.world.contactListener = MyListener()
 
         self.SCENE_WIDTH = 20.0
         self.SCENE_HEIGHT = 20.0
