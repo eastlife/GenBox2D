@@ -1,4 +1,4 @@
-from Box2D.examples.framework import (Framework, Keys, main)
+from Box2D.examples.framework import (Framework, Keys)
 
 from Box2D import (b2FixtureDef, b2PolygonShape, b2CircleShape,
                    b2Transform, b2Mul,
@@ -8,7 +8,7 @@ from Box2D import (b2FixtureDef, b2PolygonShape, b2CircleShape,
 # os.environ["SDL_VIDEODRIVER"] = "dummy"
 class MyListener (b2ContactListener):
     def BeginContact(self, contact):
-        print(contact)
+        # print(contact)
         print("Begin")
 
     def EndContact(self, contact):
@@ -19,21 +19,22 @@ class MyListener (b2ContactListener):
 
     def PostSolve(self, contact, impulse):
         print("PostSolve")
+        print(contact)
         print(impulse)
 class TaskSimulator (Framework):
     name = "TwoBallExample"
     description = "A simple example to simulate two balls in the scene and another ball of action."
 
-    def __init__(self):
+    def __init__(self, task):
         super(TaskSimulator, self).__init__()
         self.world.gravity = (0.0, -10.0)
-        self.world.contactListener = MyListener()
+        # self.world.contactListener = MyListener()
 
         self.SCENE_WIDTH = 20.0
         self.SCENE_HEIGHT = 20.0
 
         # The boundaries
-        ground = self.world.CreateBody(position=(0, self.SCENE_WIDTH / 2))
+        ground = self.world.CreateBody(position=(0, self.SCENE_HEIGHT / 2))
         ground.CreateEdgeChain(
             [(-self.SCENE_WIDTH / 2, -self.SCENE_HEIGHT / 2),
              (-self.SCENE_WIDTH / 2, self.SCENE_HEIGHT / 2),
@@ -44,6 +45,8 @@ class TaskSimulator (Framework):
 
         self.task = None
         self.bodies = []
+
+        self.add_task(task)
 
         # fixtures = b2FixtureDef(shape=b2CircleShape(radius=1.0),
         #                         density=1, friction=0.3, restitution=0.5)
@@ -86,10 +89,14 @@ class TaskSimulator (Framework):
 
             if shape == "BALL":
                 if isDynamic:
-                    fixture = b2FixtureDef(shape=b2CircleShape(radius=1.0),
+                    fixture = b2FixtureDef(shape=b2CircleShape(radius=self.diameter_percent_to_length(diameter) / 2),
                                             density=1, friction=0.3, restitution=0.8)
-                    body = self.world.CreateDynamicBody(position=(x * self.SCENE_WIDTH, y * self.SCENE_HEIGHT), fixtures=fixture)
+                    print(self.width_percent_to_x(x))
+                    print(self.height_percent_to_y(y))
+                    body = self.world.CreateDynamicBody(position=(self.width_percent_to_x(x), self.height_percent_to_y(y)), fixtures=fixture)
+                    # body2 = self.world.CreateDynamicBody(position=(x * self.SCENE_WIDTH, y * self.SCENE_HEIGHT), fixtures=fixture)
                     self.bodies.append(body)
+                    # self.bodies.append(body2)
                 else:
                     body = self.world.CreateStaticBody(shapes=b2CircleShape(radius=1.0))
                     self.bodies.append(body)
@@ -103,6 +110,17 @@ class TaskSimulator (Framework):
                 raise NotImplementedError
 
         self.task = task
+        print("task added")
+        print(self.task)
+
+    def width_percent_to_x(self, width_percent):
+        return - self.SCENE_WIDTH / 2 + width_percent * self.SCENE_WIDTH
+
+    def height_percent_to_y(self, height_percent):
+        return height_percent * self.SCENE_HEIGHT
+
+    def diameter_percent_to_length(self, diameter_percent):
+        return diameter_percent * self.SCENE_WIDTH 
 
     def Keyboard(self, key):
         if not self.body:
@@ -111,13 +129,14 @@ class TaskSimulator (Framework):
         if key == Keys.K_w:
             pass
 
-    def run(self):
+    def run_sim(self):
         if self.task is None:
             raise Exception
         timeStep = 1.0 / 60
         vel_iters, pos_iters = 6, 2
 
         # print inital positions
+        print("init")
         self.print_bodies()
 
         for i in range(600):
@@ -130,13 +149,10 @@ class TaskSimulator (Framework):
             self.world.ClearForces()
         
             # Now print the position and angle of the body.
-            self.print_bodies()
+            # self.print_bodies()
 
     def print_bodies(self):
         print(len(self.bodies), end =" ")
         for body in self.bodies:
             print(body.position, body.angle, end =" ")
         print()
-
-# if __name__ == "__main__":
-#     main(TaskSimulator)

@@ -28,12 +28,16 @@ def main():
     print(generator.tasks)
 
     from simulation.box2d_simulator import TaskSimulator
+    task = generator.tasks[0]
 
-    simulator = TaskSimulator()
-    for task in generator.tasks:
-        simulator.add_task(task)
-    # action = generator.get_action()
+    simulator = TaskSimulator(task)
+    # simulator.run_sim()
+
     simulator.run()
+    
+    # for task in generator.tasks:
+    #     simulator.add_task(task)
+    # action = generator.get_action()
     time.sleep(20)
     print("done")
 
