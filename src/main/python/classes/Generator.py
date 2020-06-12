@@ -13,14 +13,18 @@ class Generator:
         self.end_template_id = config.end_template_id
         self.num_modifications = config.num_modifications
         self.action_tier = config.action_tier
+        self.task_id = config.task_id
 
         tasks_map, _ = load_compiled_task_dict()
         task_ids = []
-        self.template_num = self.end_template_id - self.start_template_id + 1
-        for i in range(self.start_template_id, self.end_template_id + 1, 1):
-            task_mods = tasks_map[str(i).zfill(5)]
-            for j in range(self.num_modifications):
-                task_ids.append(str(i).zfill(5) + ":" + task_mods[j])
+        if self.task_id is not None:
+            task_ids.append(self.task_id)
+        else:
+            self.template_num = self.end_template_id - self.start_template_id + 1
+            for i in range(self.start_template_id, self.end_template_id + 1, 1):
+                task_mods = tasks_map[str(i).zfill(5)]
+                for j in range(self.num_modifications):
+                    task_ids.append(str(i).zfill(5) + ":" + task_mods[j])
 
         # print("tasks: ",)
         # print(task_ids)
@@ -29,10 +33,10 @@ class Generator:
 
         self.tasks = []
         for task_index in range(len(task_ids)):
-            task_id = self.simulator.task_ids[task_index]
+            id = self.simulator.task_ids[task_index]
             initial_scene = self.simulator.initial_scenes[task_index]
             initial_featurized_objects = self.simulator.initial_featurized_objects[task_index]
-            task = Task(task_id, initial_scene, initial_featurized_objects)
+            task = Task(id, initial_scene, initial_featurized_objects)
             self.tasks.append(task)
 
     '''

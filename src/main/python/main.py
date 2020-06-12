@@ -1,4 +1,6 @@
 #!/usr/bin/env python
+import sys
+
 import time
 import argparse
 from classes.Generator import Generator
@@ -15,7 +17,8 @@ def get_config_from_args():
     parser.add_argument("--friction", help="friction of contact objects", type=float, default=0.3)
     parser.add_argument("--restitution", help="restitution of dynamic objects", type=float, default=0.2)
 
-
+    parser.add_argument("-i", help="enable the interactive/gui mode", action="store_true", default=False)
+    parser.add_argument("--task_id", help="input a specific task id with format xxxxx:xxx", type=str)
     config = parser.parse_args()
     return config
 
@@ -27,18 +30,22 @@ def main():
     print("Tasks loaded: ")
     print(generator.tasks)
 
+    print(sys.argv)
+    sys.argv = sys.argv[:1]
     from simulation.box2d_simulator import TaskSimulator
     task = generator.tasks[0]
 
     simulator = TaskSimulator(task)
-    # simulator.run_sim()
 
-    simulator.run()
+    if config.i:
+        simulator.run()
+    else:
+        simulator.run_sim()
+    
     
     # for task in generator.tasks:
     #     simulator.add_task(task)
     # action = generator.get_action()
-    time.sleep(20)
     print("done")
 
 

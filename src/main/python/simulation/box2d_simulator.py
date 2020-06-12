@@ -21,6 +21,8 @@ class MyListener (b2ContactListener):
         print("PostSolve")
         print(contact)
         print(impulse)
+
+
 class TaskSimulator (Framework):
     name = "TwoBallExample"
     description = "A simple example to simulate two balls in the scene and another ball of action."
@@ -122,12 +124,6 @@ class TaskSimulator (Framework):
     def diameter_percent_to_length(self, diameter_percent):
         return diameter_percent * self.SCENE_WIDTH 
 
-    def Keyboard(self, key):
-        if not self.body:
-            return
-
-        if key == Keys.K_w:
-            pass
 
     def run_sim(self):
         if self.task is None:
@@ -150,6 +146,14 @@ class TaskSimulator (Framework):
         
             # Now print the position and angle of the body.
             # self.print_bodies()
+
+
+    def Keyboard(self, key):
+        # if not self.body:
+        #     return
+
+        if key == Keys.K_w:
+            pass
 
     def print_bodies(self):
         print(len(self.bodies), end =" ")
