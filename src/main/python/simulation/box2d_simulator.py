@@ -3,7 +3,8 @@ from Box2D.examples.framework import (Framework, Keys)
 from Box2D import (b2FixtureDef, b2PolygonShape, b2CircleShape, b2EdgeShape, b2Vec2,
                    b2Transform, b2Mul,
                    b2_pi, b2ContactListener)
-import math
+
+from object_creator import create_body
 
 # import os
 # os.environ["SDL_VIDEODRIVER"] = "dummy"
@@ -31,7 +32,7 @@ class TaskSimulator (Framework):
     def __init__(self, task):
         super(TaskSimulator, self).__init__()
         self.world.gravity = (0.0, -10.0)
-        # self.world.contactListener = MyListener()
+        self.world.contactListener = MyListener()
 
         self.SCENE_WIDTH = 20.0
         self.SCENE_HEIGHT = 20.0
@@ -51,11 +52,6 @@ class TaskSimulator (Framework):
 
         self.add_task(task)
 
-        # fixtures = b2FixtureDef(shape=b2CircleShape(radius=1.0),
-        #                         density=1, friction=0.3, restitution=0.5)
-        #
-        # body = self.world.CreateDynamicBody(
-        #     position=(0, 10), fixtures=fixtures)
 
     def add_task(self, task):
         featurized_objects = task.initial_featurized_objects
@@ -75,59 +71,10 @@ class TaskSimulator (Framework):
             print("angle")
             print(angle)
 
-            isDynamic = None
-            if color == "GRAY":
-                # Gray for dynamic objects
-                isDynamic = True
-            elif color == "GREEN":
-                # Green for dynamic balls
-                isDynamic = True
-            elif color == "BLUE":
-                # Blue for dynamic balls
-                isDynamic = True
-            elif color == "RED":
-                # Red for dynamic action balls
-                isDynamic = True
-            elif color == "BLACK":
-                # Black for static objects
-                isDynamic = False
+            body = create_body(self.world, shape, color, diameter, x, y, angle)
 
-            if shape == "BALL":
-                if isDynamic:
-                    fixture = b2FixtureDef(shape=b2CircleShape(radius=self.diameter_percent_to_length(diameter) / 2),
-                                            density=1, friction=0.3, restitution=0.8)
-                    body = self.world.CreateDynamicBody(position=(self.width_percent_to_x(x), self.height_percent_to_y(y)), fixtures=fixture)
-                    # body2 = self.world.CreateDynamicBody(position=(x * self.SCENE_WIDTH, y * self.SCENE_HEIGHT), fixtures=fixture)
-                    self.bodies.append(body)
-                    # self.bodies.append(body2)
-                else:
-                    body = self.world.CreateStaticBody(shapes=b2CircleShape(radius=1.0))
-                    self.bodies.append(body)
-            elif shape == "BAR":
-                if isDynamic:
-                    
-                    print("WARNING! The template includes object type {shape} which is not yet implemented. Some objects in the world will be missing".format(shape = shape))
-                else:
-                    theta = b2_pi * 2 * angle
-                    center = (self.width_percent_to_x(x), self.height_percent_to_y(y))
-                    length = self.diameter_percent_to_length(diameter)
-                    # v1 = (center[0] - length / 2, center[1])
-                    # v2 = (center[0] + length / 2, center[1])
-                    v1 = (center[0] - length / 2 * math.cos(theta), center[1] - length / 2 * math.sin(theta))
-                    v2 = (center[0] + length / 2 * math.cos(theta), center[1] + length / 2 * math.sin(theta))
-                    edge = b2EdgeShape()
-                    edge.vertices = [v1, v2]
-                    edge.position = center
-                    
-                    body = self.world.CreateStaticBody(shapes=edge)
-                    self.bodies.append(body)
-
-            elif shape == "JAR":
-                print("WARNING! The template includes object type {shape} which is not yet implemented. Some objects in the world be missing".format(shape = shape))
-            elif shape == "STANDINGSTICKS":
-                print("WARNING! The template includes object type {shape} which is not yet implemented. Some objects in the world be missing".format(shape = shape))
-            else:
-                raise NotImplementedError
+            if body is not None:
+                self.bodies.append(body)
 
         self.task = task
         print("task added")
