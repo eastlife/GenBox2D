@@ -3,6 +3,7 @@ from Box2D.examples.framework import (Framework, Keys)
 from Box2D import (b2FixtureDef, b2PolygonShape, b2CircleShape, b2EdgeShape, b2Vec2,
                    b2Transform, b2Mul,
                    b2_pi, b2ContactListener)
+import math
 
 # import os
 # os.environ["SDL_VIDEODRIVER"] = "dummy"
@@ -71,6 +72,8 @@ class TaskSimulator (Framework):
             x = state[0]
             y = state[1]
             angle = state[2]
+            print("angle")
+            print(angle)
 
             isDynamic = None
             if color == "GRAY":
@@ -105,10 +108,13 @@ class TaskSimulator (Framework):
                     
                     print("WARNING! The template includes object type {shape} which is not yet implemented. Some objects in the world will be missing".format(shape = shape))
                 else:
+                    theta = b2_pi * 2 * angle
                     center = (self.width_percent_to_x(x), self.height_percent_to_y(y))
                     length = self.diameter_percent_to_length(diameter)
-                    v1 = (center[0] - length / 2, center[1])
-                    v2 = (center[0] + length / 2, center[1])
+                    # v1 = (center[0] - length / 2, center[1])
+                    # v2 = (center[0] + length / 2, center[1])
+                    v1 = (center[0] - length / 2 * math.cos(theta), center[1] - length / 2 * math.sin(theta))
+                    v2 = (center[0] + length / 2 * math.cos(theta), center[1] + length / 2 * math.sin(theta))
                     edge = b2EdgeShape()
                     edge.vertices = [v1, v2]
                     edge.position = center
