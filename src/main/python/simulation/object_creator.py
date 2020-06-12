@@ -25,13 +25,15 @@ def create_body(world, scene_width, scene_height, shape, color, diameter, x, y, 
     body = None
 
     if shape == "BALL":
+        center = (width_percent_to_x(scene_width, x), height_percent_to_y(scene_height, y))
+        radius = diameter_percent_to_length(scene_width, diameter) / 2
         if isDynamic:
-            fixture = b2FixtureDef(shape=b2CircleShape(radius=diameter_percent_to_length(scene_width, diameter) / 2),
+            fixture = b2FixtureDef(shape=b2CircleShape(radius=radius),
                                     density=1, friction=0.3, restitution=0.8)
-            body = world.CreateDynamicBody(position=(width_percent_to_x(scene_width, x), height_percent_to_y(scene_height, y)), fixtures=fixture)
+            body = world.CreateDynamicBody(position=center, fixtures=fixture)
         else:
-            body = world.CreateStaticBody(shapes=b2CircleShape(radius=1.0))
-            
+            body = world.CreateStaticBody(position=center, shapes=b2CircleShape(radius=radius))
+
     elif shape == "BAR":
         theta = b2_pi * 2 * angle
         center = (width_percent_to_x(scene_width, x), height_percent_to_y(scene_height, y))
