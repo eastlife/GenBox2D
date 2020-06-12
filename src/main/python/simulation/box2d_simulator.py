@@ -1,6 +1,6 @@
 from Box2D.examples.framework import (Framework, Keys)
 
-from Box2D import (b2FixtureDef, b2PolygonShape, b2CircleShape,
+from Box2D import (b2FixtureDef, b2PolygonShape, b2CircleShape, b2EdgeShape, b2Vec2,
                    b2Transform, b2Mul,
                    b2_pi, b2ContactListener)
 
@@ -93,8 +93,6 @@ class TaskSimulator (Framework):
                 if isDynamic:
                     fixture = b2FixtureDef(shape=b2CircleShape(radius=self.diameter_percent_to_length(diameter) / 2),
                                             density=1, friction=0.3, restitution=0.8)
-                    print(self.width_percent_to_x(x))
-                    print(self.height_percent_to_y(y))
                     body = self.world.CreateDynamicBody(position=(self.width_percent_to_x(x), self.height_percent_to_y(y)), fixtures=fixture)
                     # body2 = self.world.CreateDynamicBody(position=(x * self.SCENE_WIDTH, y * self.SCENE_HEIGHT), fixtures=fixture)
                     self.bodies.append(body)
@@ -103,11 +101,25 @@ class TaskSimulator (Framework):
                     body = self.world.CreateStaticBody(shapes=b2CircleShape(radius=1.0))
                     self.bodies.append(body)
             elif shape == "BAR":
-                pass
+                if isDynamic:
+                    
+                    print("WARNING! The template includes object type {shape} which is not yet implemented. Some objects in the world will be missing".format(shape = shape))
+                else:
+                    center = (self.width_percent_to_x(x), self.height_percent_to_y(y))
+                    length = self.diameter_percent_to_length(diameter)
+                    v1 = (center[0] - length / 2, center[1])
+                    v2 = (center[0] + length / 2, center[1])
+                    edge = b2EdgeShape()
+                    edge.vertices = [v1, v2]
+                    edge.position = center
+                    
+                    body = self.world.CreateStaticBody(shapes=edge)
+                    self.bodies.append(body)
+
             elif shape == "JAR":
-                pass
+                print("WARNING! The template includes object type {shape} which is not yet implemented. Some objects in the world be missing".format(shape = shape))
             elif shape == "STANDINGSTICKS":
-                pass
+                print("WARNING! The template includes object type {shape} which is not yet implemented. Some objects in the world be missing".format(shape = shape))
             else:
                 raise NotImplementedError
 
