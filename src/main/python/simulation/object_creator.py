@@ -4,7 +4,7 @@ from Box2D import (b2FixtureDef, b2PolygonShape, b2CircleShape, b2EdgeShape, b2V
 
 import math
 
-def create_body(world, shape, color, diameter, x, y, angle):
+def create_body(world, scene_width, scene_height, shape, color, diameter, x, y, angle):
     isDynamic = None
     if color == "GRAY":
         # Gray for dynamic objects
@@ -26,17 +26,16 @@ def create_body(world, shape, color, diameter, x, y, angle):
 
     if shape == "BALL":
         if isDynamic:
-            fixture = b2FixtureDef(shape=b2CircleShape(radius=diameter_percent_to_length(diameter) / 2),
+            fixture = b2FixtureDef(shape=b2CircleShape(radius=diameter_percent_to_length(scene_width, diameter) / 2),
                                     density=1, friction=0.3, restitution=0.8)
-            body = world.CreateDynamicBody(position=(width_percent_to_x(x), height_percent_to_y(y)), fixtures=fixture)
-            # body2 = world.CreateDynamicBody(position=(x * SCENE_WIDTH, y * SCENE_HEIGHT), fixtures=fixture)
-            # bodies.append(body2)
+            body = world.CreateDynamicBody(position=(width_percent_to_x(scene_width, x), height_percent_to_y(scene_height, y)), fixtures=fixture)
         else:
             body = world.CreateStaticBody(shapes=b2CircleShape(radius=1.0))
+            
     elif shape == "BAR":
         theta = b2_pi * 2 * angle
-        center = (width_percent_to_x(x), height_percent_to_y(y))
-        length = diameter_percent_to_length(diameter)
+        center = (width_percent_to_x(scene_width, x), height_percent_to_y(scene_height, y))
+        length = diameter_percent_to_length(scene_width, diameter)
         v1 = (center[0] - length / 2 * math.cos(theta), center[1] - length / 2 * math.sin(theta))
         v2 = (center[0] + length / 2 * math.cos(theta), center[1] + length / 2 * math.sin(theta))
         edge = b2EdgeShape()
@@ -61,11 +60,11 @@ def create_body(world, shape, color, diameter, x, y, angle):
     return body
 
 
-def width_percent_to_x(width_percent):
-    return - self.SCENE_WIDTH / 2 + width_percent * self.SCENE_WIDTH
+def width_percent_to_x(scene_width, width_percent):
+    return - scene_width / 2 + width_percent * scene_width
 
-def height_percent_to_y(height_percent):
-    return height_percent * self.SCENE_HEIGHT
+def height_percent_to_y(scene_height, height_percent):
+    return height_percent * scene_height
 
-def diameter_percent_to_length(diameter_percent):
-    return diameter_percent * self.SCENE_WIDTH 
+def diameter_percent_to_length(scene_width, diameter_percent):
+    return diameter_percent * scene_width

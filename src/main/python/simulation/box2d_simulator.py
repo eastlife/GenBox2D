@@ -4,7 +4,7 @@ from Box2D import (b2FixtureDef, b2PolygonShape, b2CircleShape, b2EdgeShape, b2V
                    b2Transform, b2Mul,
                    b2_pi, b2ContactListener)
 
-from object_creator import create_body
+from .object_creator import create_body
 
 # import os
 # os.environ["SDL_VIDEODRIVER"] = "dummy"
@@ -71,7 +71,7 @@ class TaskSimulator (Framework):
             print("angle")
             print(angle)
 
-            body = create_body(self.world, shape, color, diameter, x, y, angle)
+            body = create_body(self.world, self.SCENE_WIDTH, self.SCENE_HEIGHT, shape, color, diameter, x, y, angle)
 
             if body is not None:
                 self.bodies.append(body)
