@@ -33,9 +33,8 @@ def main():
     print(sys.argv)
     sys.argv = sys.argv[:1]
     from simulation.box2d_simulator import TaskSimulator
-    task = generator.tasks[0]
 
-    simulator = TaskSimulator(task)
+    simulator = TaskSimulator(generator.tasks)
 
     if config.i:
         simulator.run()

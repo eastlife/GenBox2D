@@ -1,13 +1,12 @@
 from Box2D.examples.framework import (Framework, Keys)
 
-from Box2D import (b2FixtureDef, b2PolygonShape, b2CircleShape, b2EdgeShape, b2Vec2,
+from Box2D import (b2FixtureDef, b2PolygonShape, b2CircleShape, b2EdgeShape,
                    b2Transform, b2Mul,
                    b2_pi, b2ContactListener)
 
 from .object_creator import create_body
 
-# import os
-# os.environ["SDL_VIDEODRIVER"] = "dummy"
+
 class MyListener (b2ContactListener):
     def BeginContact(self, contact):
         # print(contact)
@@ -29,7 +28,7 @@ class TaskSimulator (Framework):
     name = "TwoBallExample"
     description = "A simple example to simulate two balls in the scene and another ball of action."
 
-    def __init__(self, task):
+    def __init__(self, tasks):
         super(TaskSimulator, self).__init__()
         self.world.gravity = (0.0, -10.0)
         self.world.contactListener = MyListener()
@@ -47,14 +46,20 @@ class TaskSimulator (Framework):
              (-self.SCENE_WIDTH / 2, -self.SCENE_HEIGHT / 2)]
         )
 
-        self.task = None
         self.bodies = []
 
-        self.add_task(task)
+        self.tasks = tasks
+        self.task_idx = 0
+        self.task = None
+
+        self.load_task()
 
 
-    def add_task(self, task):
-        featurized_objects = task.initial_featurized_objects
+    def load_task(self):
+        if self.task_idx >= len(self.tasks) or self.task_idx < 0:
+            return False
+        self.task = self.tasks[self.task_idx]
+        featurized_objects = self.task.initial_featurized_objects
         for i in range(featurized_objects.num_objects):
             shape = featurized_objects.shapes[i]
             print("shape: " + shape)
@@ -76,9 +81,20 @@ class TaskSimulator (Framework):
             if body is not None:
                 self.bodies.append(body)
 
-        self.task = task
-        print("task added")
+        print("task loaded")
         print(self.task)
+
+    def next_task(self):
+        self.task_idx += 1
+        return self.load_task()
+
+    def prev_task(self):
+        self.task_idx -= 1
+        return self.load_task()
+
+    def replay_task(self):
+        return self.load_task()
+
 
     def width_percent_to_x(self, width_percent):
         return - self.SCENE_WIDTH / 2 + width_percent * self.SCENE_WIDTH
@@ -112,13 +128,27 @@ class TaskSimulator (Framework):
             # Now print the position and angle of the body.
             # self.print_bodies()
 
+    def cleanUp(self):
+        if len(self.bodies) == 0:
+            return
+        for body in self.bodies:
+            self.world.DestroyBody(body)
+        self.bodies = []
+
 
     def Keyboard(self, key):
-        # if not self.body:
-        #     return
-
-        if key == Keys.K_w:
-            pass
+        isSuccess = True
+        if key == Keys.K_c:
+            self.cleanUp()
+        elif key == Keys.K_RETURN:
+            self.cleanUp()
+            isSucess = self.next_task()
+        elif key == Keys.K_BACKSPACE:
+            self.cleanUp()
+            isSucess = self.prev_task()
+        elif key == Keys.K_r:
+            self.cleanUp()
+            isSucess = self.replay_task()
 
     def print_bodies(self):
         print(len(self.bodies), end =" ")
