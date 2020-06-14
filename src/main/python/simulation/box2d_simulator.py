@@ -85,11 +85,13 @@ class TaskSimulator (Framework):
         print(self.task)
 
     def next_task(self):
-        self.task_idx += 1
+        if self.task_idx < len(self.tasks):
+            self.task_idx += 1
         return self.load_task()
 
     def prev_task(self):
-        self.task_idx -= 1
+        if self.task_idx >= 0:
+            self.task_idx -= 1
         return self.load_task()
 
     def replay_task(self):
