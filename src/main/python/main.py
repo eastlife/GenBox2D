@@ -2,6 +2,7 @@
 import sys
 import os
 
+import logging
 import time
 import argparse
 from classes.WorldProperties import WorldProperties
@@ -16,6 +17,7 @@ def get_config_from_args():
     parser.add_argument("--action_tier", help="action tier <ball/two_balls>", default="ball")
 
     parser.add_argument("--config_path", help="name of the config file under the config directory", type=str, default="config.json")
+    parser.add_argument("--log_file", help="name of the log file under the log directory", type=str, default="genbox2d.log")
 
     parser.add_argument("-i", help="enable the interactive/gui mode", action="store_true", default=False)
     parser.add_argument("--task_id", help="input a specific task id with format xxxxx:xxx", type=str)
@@ -25,6 +27,11 @@ def get_config_from_args():
 
 def main():
     config = get_config_from_args()
+
+    logging.basicConfig(filename=config.log_file, filemode='w')
+    logger=logging.getLogger()
+    logger.setLevel(logging.INFO)
+
     generator = Generator(config)
 
     config_path_abs = os.path.join(os.getcwd(), "config", config.config_path)
@@ -43,7 +50,7 @@ def main():
     if config.i:
         simulator.run()
     else:
-        simulator.run_sim()
+        simulator.run_sim(logger)
     
     
     # for task in generator.tasks:

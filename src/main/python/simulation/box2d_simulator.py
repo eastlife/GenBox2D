@@ -112,7 +112,7 @@ class TaskSimulator (Framework):
         return diameter_percent * self.SCENE_WIDTH 
 
 
-    def run_sim(self):
+    def run_sim(self, logger):
         if self.task is None:
             raise Exception
         timeStep = 1.0 / 60
@@ -120,6 +120,7 @@ class TaskSimulator (Framework):
 
         # print inital positions
         print("init")
+        logger.info("logger info")
         self.print_bodies()
 
         for i in range(600):

@@ -63,3 +63,6 @@ notebook/
 
 # Cache
 __pycache__/
+
+# data
+*.log
