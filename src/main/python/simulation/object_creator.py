@@ -4,7 +4,7 @@ from Box2D import (b2FixtureDef, b2PolygonShape, b2CircleShape, b2EdgeShape, b2V
 
 import math
 
-def create_body(world, scene_width, scene_height, shape, color, diameter, x, y, angle):
+def create_body(world, properties, scene_width, scene_height, shape, color, diameter, x, y, angle):
     isDynamic = None
     if color == "GRAY":
         # Gray for dynamic objects
@@ -23,13 +23,14 @@ def create_body(world, scene_width, scene_height, shape, color, diameter, x, y, 
         isDynamic = False
 
     body = None
+                                                                                                                                               
 
     if shape == "BALL":
         center = (width_percent_to_x(scene_width, x), height_percent_to_y(scene_height, y))
         radius = diameter_percent_to_length(scene_width, diameter) / 2
         if isDynamic:
             fixture = b2FixtureDef(shape=b2CircleShape(radius=radius),
-                                    density=1, friction=0.3, restitution=0.8)
+                                    density=properties.ball_density, friction=properties.ball_friction, restitution=properties.ball_restitution)
             body = world.CreateDynamicBody(position=center, fixtures=fixture)
         else:
             body = world.CreateStaticBody(position=center, shapes=b2CircleShape(radius=radius))

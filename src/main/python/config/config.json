@@ -1,0 +1,36 @@
+{
+    "gravity": -10.0,
+    "general_density": 1.0,
+    "general_friction": 0.5,
+    "general_restitution": 0.3,
+    "shapes": [
+        {
+            "type": "ball",
+            "enabled": true,
+            "density": 1.0,
+            "friction": 0.5,
+            "restitution": 0.5
+        },
+        {
+            "type": "bar",
+            "enabled": true,
+            "density": 1.0,
+            "friction": 0.5,
+            "restitution": 0.3
+        },
+        {
+            "type": "jar",
+            "enabled": true,
+            "density": 1.0,
+            "friction": 0.5,
+            "restitution": 0.3
+        },
+        {
+            "type": "standing_sticks",
+            "enabled": false,
+            "density": 1.0,
+            "friction": 0.5,
+            "restitution": 0.3
+        }
+    ]
+}

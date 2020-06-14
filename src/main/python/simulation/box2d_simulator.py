@@ -4,6 +4,7 @@ from Box2D import (b2FixtureDef, b2PolygonShape, b2CircleShape, b2EdgeShape,
                    b2Transform, b2Mul,
                    b2_pi, b2ContactListener)
 
+
 from .object_creator import create_body
 
 
@@ -28,9 +29,13 @@ class TaskSimulator (Framework):
     name = "TwoBallExample"
     description = "A simple example to simulate two balls in the scene and another ball of action."
 
-    def __init__(self, tasks):
+    def __init__(self, tasks, properties):
         super(TaskSimulator, self).__init__()
-        self.world.gravity = (0.0, -10.0)
+
+        self.tasks = tasks
+        self.properties = properties
+
+        self.world.gravity = (0.0, properties.gravity)
         self.world.contactListener = MyListener()
 
         self.SCENE_WIDTH = 20.0
@@ -48,7 +53,6 @@ class TaskSimulator (Framework):
 
         self.bodies = []
 
-        self.tasks = tasks
         self.task_idx = 0
         self.task = None
 
@@ -76,7 +80,7 @@ class TaskSimulator (Framework):
             print("angle")
             print(angle)
 
-            body = create_body(self.world, self.SCENE_WIDTH, self.SCENE_HEIGHT, shape, color, diameter, x, y, angle)
+            body = create_body(self.world, self.properties, self.SCENE_WIDTH, self.SCENE_HEIGHT, shape, color, diameter, x, y, angle)
 
             if body is not None:
                 self.bodies.append(body)
