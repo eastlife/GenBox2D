@@ -9,27 +9,19 @@ class WorldProperties:
             config_dict = json.load(f)
             self.gravity = -10.0
             
+            self.densities = self.frictions = self.restitutions = {}
             self.general_density = config_dict["general_density"]
-            self.ball_density = self.bar_density = self.jar_density = self.standing_stick_density = self.general_density
+            self.densities["ball"] = self.densities["bar"] = self.densities["jar"] = self.densities["standing_stick"] = self.general_density
             self.general_friction = config_dict["general_friction"]
-            self.ball_friction = self.bar_friction = self.jar_friction = self.standing_stick_friction = self.general_density
+            self.frictions["ball"] = self.frictions["bar"] = self.frictions["jar"] = self.frictions["standing_stick"] = self.general_density
             self.general_restitution = config_dict["general_restitution"]
-            self.ball_restitution = self.bar_restitution = self.jar_restitution = self.standing_stick_restitution = self.general_density
+            self.restitutions["ball"] = self.restitutions["bar"] = self.restitutions["jar"] = self.restitutions["standing_stick"] = self.general_density
 
             for shape in config_dict["shapes"]:
-                if shape["type"] == "ball":
-                    self.ball_density = shape["density"]
-                    self.ball_friction = shape["friction"]
-                    self.ball_restitution = shape["restitution"]
-                elif shape["type"] == "bar":
-                    self.bar_density = shape["density"]
-                    self.bar_friction = shape["friction"]
-                    self.bar_restitution = shape["restitution"]
-                elif shape["type"] == "jar":
-                    self.jar_density = shape["density"]
-                    self.jar_friction = shape["friction"]
-                    self.jar_restitution = shape["restitution"]
-                elif shape["type"] == "standing_stick":
-                    self.standing_stick_density = shape["density"]
-                    self.standing_stick_friction = shape["friction"]
-                    self.standing_stick_restitution = shape["restitution"]
+                if shape["type"] == "ball" or shape["type"] == "bar" or shape["type"] == "jar" or shape["type"] == "standing_stick":
+                    self.densities[shape["type"]] = shape["density"]
+                    self.frictions[shape["type"]] = shape["friction"]
+                    self.restitutions[shape["type"]] = shape["restitution"]
+                else:
+                    print("Unsupported shape '{shape}' in config file".format(shape = shape["type"]))
+                    exit(1)

@@ -30,7 +30,7 @@ def create_body(world, properties, scene_width, scene_height, shape, color, diam
         radius = diameter_percent_to_length(scene_width, diameter) / 2
         if isDynamic:
             fixture = b2FixtureDef(shape=b2CircleShape(radius=radius),
-                                    density=properties.ball_density, friction=properties.ball_friction, restitution=properties.ball_restitution)
+                                    density=properties.densities["ball"], friction=properties.frictions["ball"], restitution=properties.restitutions["ball"])
             body = world.CreateDynamicBody(position=center, fixtures=fixture)
         else:
             body = world.CreateStaticBody(position=center, shapes=b2CircleShape(radius=radius))
