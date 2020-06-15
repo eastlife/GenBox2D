@@ -45,12 +45,12 @@ def main():
     sys.argv = sys.argv[:1]
     from simulation.box2d_simulator import TaskSimulator
 
-    simulator = TaskSimulator(generator.tasks, properties)
+    simulator = TaskSimulator(generator.tasks, properties, logger)
 
     if config.i:
         simulator.run()
     else:
-        simulator.run_sim(logger)
+        simulator.run_sim()
     
     
     # for task in generator.tasks:

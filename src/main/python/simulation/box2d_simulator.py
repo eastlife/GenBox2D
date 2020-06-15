@@ -1,42 +1,53 @@
+import json
+
 from Box2D.examples.framework import (Framework, Keys)
 
 from Box2D import (b2FixtureDef, b2PolygonShape, b2CircleShape, b2EdgeShape,
                    b2Transform, b2Mul,
-                   b2_pi, b2ContactListener)
+                   b2_pi, b2ContactListener, b2Contact, b2ContactImpulse)
 
 
 from .object_creator import create_body
 
 
 class MyListener (b2ContactListener):
+    def __init__(self, bodies, contacts):
+        super(MyListener, self).__init__()
+        self.bodies = bodies
+        self.contacts = contacts
+
     def BeginContact(self, contact):
-        # print(contact)
-        print("Begin")
+        pass
 
     def EndContact(self, contact):
-        print("End")
+        pass
 
     def PreSolve(self, contact, oldManifold):
-        print("PreSolve")
+        pass
 
     def PostSolve(self, contact, impulse):
-        print("PostSolve")
-        print(contact)
-        print(impulse)
+        # print(contact)
+        # print(impulse)
+        contact_info = serialize_contact(self.bodies, contact, impulse)
+        self.contacts.append(contact_info)
 
 
 class TaskSimulator (Framework):
     name = "TwoBallExample"
     description = "A simple example to simulate two balls in the scene and another ball of action."
 
-    def __init__(self, tasks, properties):
+    def __init__(self, tasks, properties, logger):
         super(TaskSimulator, self).__init__()
 
         self.tasks = tasks
         self.properties = properties
+        self.logger = logger
+
+        self.bodies = []
+        self.contacts = []
 
         self.world.gravity = (0.0, properties.gravity)
-        self.world.contactListener = MyListener()
+        self.world.contactListener = MyListener(self.bodies, self.contacts)
 
         self.SCENE_WIDTH = 20.0
         self.SCENE_HEIGHT = 20.0
@@ -51,7 +62,6 @@ class TaskSimulator (Framework):
              (-self.SCENE_WIDTH / 2, -self.SCENE_HEIGHT / 2)]
         )
 
-        self.bodies = []
 
         self.task_idx = 0
         self.task = None
@@ -112,16 +122,14 @@ class TaskSimulator (Framework):
         return diameter_percent * self.SCENE_WIDTH 
 
 
-    def run_sim(self, logger):
+    def run_sim(self):
         if self.task is None:
             raise Exception
         timeStep = 1.0 / 60
         vel_iters, pos_iters = 6, 2
 
         # print inital positions
-        print("init")
-        logger.info("logger info")
-        self.print_bodies()
+        self.logger.info(json.dumps(self.log_bodies()))
 
         for i in range(600):
             # Instruct the world to perform a single step of simulation. It is
@@ -133,7 +141,14 @@ class TaskSimulator (Framework):
             self.world.ClearForces()
         
             # Now print the position and angle of the body.
-            # self.print_bodies()
+            # self.log_bodies()
+            json_dict = {}
+            json_dict["timestamp"] = i
+            json_dict["body_info"] = self.log_bodies()
+            json_dict["contact_info"] = self.log_contacts()
+            self.logger.info(json.dumps(json_dict))
+            
+            self.contacts.clear()
 
     def cleanUp(self):
         if len(self.bodies) == 0:
@@ -149,16 +164,53 @@ class TaskSimulator (Framework):
             self.cleanUp()
         elif key == Keys.K_RETURN:
             self.cleanUp()
-            isSucess = self.next_task()
+            isSuccess = self.next_task()
         elif key == Keys.K_BACKSPACE:
             self.cleanUp()
-            isSucess = self.prev_task()
+            isSuccess = self.prev_task()
         elif key == Keys.K_r:
             self.cleanUp()
-            isSucess = self.replay_task()
+            isSuccess = self.replay_task()
 
-    def print_bodies(self):
-        print(len(self.bodies), end =" ")
-        for body in self.bodies:
-            print(body.position, body.angle, end =" ")
-        print()
+    def log_bodies(self):
+        json_dict = {}
+        json_dict["body_num"] = len(self.bodies)
+        json_bodies = []
+        for idx, body in enumerate(self.bodies):
+            json_body = {}
+            json_body["idx"] = idx
+            json_body["pos_x"] = body.position[0]
+            json_body["pos_y"] = body.position[1]
+            json_body["angle"] = body.angle
+            json_bodies.append(json_body)
+
+        json_dict["bodies"] = json_bodies
+        return json_dict
+
+    def log_contacts(self):
+        json_dict = {}
+        json_dict["contact_num"] = len(self.contacts)
+        json_contacts = []
+        for _, contact_info in enumerate(self.contacts):
+            json_contacts.append(contact_info)
+        json_dict["contacts"] = json_contacts
+        return json_dict
+
+def find_body(bodies, body):
+    if body in bodies:
+        return bodies.index(body)
+    else:
+        return -1
+
+
+def serialize_contact(bodies, contact, impulse):
+    json_contact = {}
+    json_contact["body_a"] = find_body(bodies, contact.fixtureA.body)
+    json_contact["body_b"] = find_body(bodies, contact.fixtureB.body)
+    json_contact["manifold_normal"] = (contact.worldManifold.normal[0], contact.worldManifold.normal[1])
+
+    json_contact["points"] = contact.worldManifold.points
+
+    json_contact["normal_impulse"] = impulse.normalImpulses
+    json_contact["tangent_impulse"] = impulse.tangentImpulses
+    return json_contact
