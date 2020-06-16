@@ -49,12 +49,15 @@ class TaskSimulator (Framework):
     name = "TwoBallExample"
     description = "A simple example to simulate two balls in the scene and another ball of action."
 
-    def __init__(self, tasks, properties, logger):
+    def __init__(self, config, tasks, properties, logger):
         super(TaskSimulator, self).__init__()
 
         self.tasks = tasks
         self.properties = properties
         self.logger = logger
+
+        self.frequency = config.frequency
+        self.total_steps = config.total_steps
 
         self.bodies = []
         self.contacts = []
@@ -138,13 +141,13 @@ class TaskSimulator (Framework):
     def run_sim(self):
         if self.task is None:
             raise Exception
-        timeStep = 1.0 / 60
+        timeStep = 1.0 / self.frequency
         vel_iters, pos_iters = 6, 2
 
         # print inital positions
         self.logger.info(self.task.serialize_task())
 
-        for i in range(600):
+        for i in range(self.total_steps):
             # Instruct the world to perform a single step of simulation. It is
             # generally best to keep the time step and iterations fixed.
             self.world.Step(timeStep, vel_iters, pos_iters)
