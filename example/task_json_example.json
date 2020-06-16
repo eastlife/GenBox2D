@@ -1,0 +1,22 @@
+{
+    "task_id":"00000:001",
+    "num_featurized_objects":2,
+    "featurized_objects":[
+      {
+        "shape":"BALL",
+        "color":"GREEN",
+        "diameter":0.12109375,
+        "initial_x":0.10000000149011612,
+        "initial_y":0.26054686307907104,
+        "initial_angle":0.0
+      },
+      {
+        "shape":"BALL",
+        "color":"BLUE",
+        "diameter":0.05859375,
+        "initial_x":0.949999988079071,
+        "initial_y":0.22929687798023224,
+        "initial_angle":0.0
+      }
+    ]
+  }
