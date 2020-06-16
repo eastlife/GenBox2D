@@ -28,8 +28,21 @@ class MyListener (b2ContactListener):
     def PostSolve(self, contact, impulse):
         # print(contact)
         # print(impulse)
-        contact_info = serialize_contact(self.bodies, contact, impulse)
+        contact_info = self.log_contact(self.bodies, contact, impulse)
         self.contacts.append(contact_info)
+    
+
+    def log_contact(self, bodies, contact, impulse):
+        json_contact = {}
+        json_contact["body_a"] = find_body(bodies, contact.fixtureA.body)
+        json_contact["body_b"] = find_body(bodies, contact.fixtureB.body)
+        json_contact["manifold_normal"] = (contact.worldManifold.normal[0], contact.worldManifold.normal[1])
+
+        json_contact["points"] = contact.worldManifold.points
+
+        json_contact["normal_impulse"] = impulse.normalImpulses
+        json_contact["tangent_impulse"] = impulse.tangentImpulses
+        return json_contact
 
 
 class TaskSimulator (Framework):
@@ -129,7 +142,7 @@ class TaskSimulator (Framework):
         vel_iters, pos_iters = 6, 2
 
         # print inital positions
-        self.logger.info(json.dumps(self.log_bodies()))
+        self.logger.info(self.task.serialize_task())
 
         for i in range(600):
             # Instruct the world to perform a single step of simulation. It is
@@ -140,13 +153,7 @@ class TaskSimulator (Framework):
             # should know about this function.
             self.world.ClearForces()
         
-            # Now print the position and angle of the body.
-            # self.log_bodies()
-            json_dict = {}
-            json_dict["timestamp"] = i
-            json_dict["body_info"] = self.log_bodies()
-            json_dict["contact_info"] = self.log_contacts()
-            self.logger.info(json.dumps(json_dict))
+            self.logger.info(self.serialize_timestamp(i))
             
             self.contacts.clear()
 
@@ -171,6 +178,13 @@ class TaskSimulator (Framework):
         elif key == Keys.K_r:
             self.cleanUp()
             isSuccess = self.replay_task()
+
+    def serialize_timestamp(self, timestamp):
+        json_dict = {}
+        json_dict["timestamp"] = timestamp
+        json_dict["body_info"] = self.log_bodies()
+        json_dict["contact_info"] = self.log_contacts()
+        return json.dumps(json_dict)
 
     def log_bodies(self):
         json_dict = {}
@@ -201,16 +215,3 @@ def find_body(bodies, body):
         return bodies.index(body)
     else:
         return -1
-
-
-def serialize_contact(bodies, contact, impulse):
-    json_contact = {}
-    json_contact["body_a"] = find_body(bodies, contact.fixtureA.body)
-    json_contact["body_b"] = find_body(bodies, contact.fixtureB.body)
-    json_contact["manifold_normal"] = (contact.worldManifold.normal[0], contact.worldManifold.normal[1])
-
-    json_contact["points"] = contact.worldManifold.points
-
-    json_contact["normal_impulse"] = impulse.normalImpulses
-    json_contact["tangent_impulse"] = impulse.tangentImpulses
-    return json_contact
