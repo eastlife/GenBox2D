@@ -13,7 +13,7 @@ def get_config_from_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--start_template_id", help="start template id", type=int, default=0)
     parser.add_argument("--end_template_id", help="end template id", type=int, default=0)
-    parser.add_argument("--num_modifications", help="num_modifications", type=int, default=1)
+    parser.add_argument("--num_mods", help="number of mods for each template", type=int, default=1)
     parser.add_argument("--action_tier", help="action tier <ball/two_balls>", default="ball")
 
     parser.add_argument("--config_path", help="name of the config file under the config directory", type=str, default="config.json")

@@ -11,7 +11,7 @@ class Generator:
     def __init__(self, config):
         self.start_template_id = config.start_template_id
         self.end_template_id = config.end_template_id
-        self.num_modifications = config.num_modifications
+        self.num_mods = config.num_mods
         self.action_tier = config.action_tier
         self.task_id = config.task_id
 
@@ -23,7 +23,7 @@ class Generator:
             self.template_num = self.end_template_id - self.start_template_id + 1
             for i in range(self.start_template_id, self.end_template_id + 1, 1):
                 task_mods = tasks_map[str(i).zfill(5)]
-                for j in range(self.num_modifications):
+                for j in range(self.num_mods):
                     task_ids.append(str(i).zfill(5) + ":" + task_mods[j])
 
         # print("tasks: ",)

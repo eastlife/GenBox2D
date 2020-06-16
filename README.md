@@ -41,7 +41,7 @@ To run the program, cd into `GenBox2D/src/main/python` and run `main.py`. For ex
 python main.py --task_id 00000:001
 
 # Range tasks
-python main.py --start_template_id 0 --end_template_id 5 --num_modifications 2
+python main.py --start_template_id 0 --end_template_id 5 --num_mods 2
 ```
 
 There are two modes in GenBox2D, GUI mode and dataset mode
@@ -53,7 +53,7 @@ GUI mode allows you to visualize the world created by pyBox2D with pygame packag
 An example command to run the program in GUI mode:
 
 ```(bash)
-python main.py --start_template_id 0 --end_template_id 5 --num_modifications 2 -i
+python main.py --start_template_id 0 --end_template_id 5 --num_mods 2 -i
 ```
 
 Some controls when interacting with GUI:
