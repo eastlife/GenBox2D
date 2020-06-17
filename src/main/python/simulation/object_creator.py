@@ -46,9 +46,10 @@ def create_body(world, properties, scene_width, scene_height, shape, color, diam
         edge.position = center
 
         if isDynamic:
-            # fixture = b2FixtureDef(shape=edge,
-            #                         density=1, friction=0.3, restitution=0.8)
-            # body = world.CreateDynamicBody(fixtures=fixture)
+            bar_shape = b2PolygonShape(box=(diameter_percent_to_length(scene_width, diameter) / 2, diameter_percent_to_length(scene_width, 0.01)))
+            bar_fixture = b2FixtureDef(shape=bar_shape,
+                            density=properties.densities["bar"], friction=properties.frictions["bar"], restitution=properties.restitutions["bar"])
+            body = world.CreateDynamicBody(fixtures=bar_fixture, angle= 2 * b2_pi * angle)
             print("WARNING! The template includes object type {shape} which is not yet implemented. Some objects in the world will be missing".format(shape = shape))
         else:
             body = world.CreateStaticBody(shapes=edge)
