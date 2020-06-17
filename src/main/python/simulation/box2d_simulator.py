@@ -46,8 +46,8 @@ class MyListener (b2ContactListener):
 
 
 class TaskSimulator (Framework):
-    name = "TwoBallExample"
-    description = "A simple example to simulate two balls in the scene and another ball of action."
+    name = "GenBox2D GUI Tool"
+    description = "Visualization for PHYRE tasks."
 
     def __init__(self, config, tasks, properties, logger):
         super(TaskSimulator, self).__init__()
@@ -58,6 +58,7 @@ class TaskSimulator (Framework):
 
         self.frequency = config.frequency
         self.total_steps = config.total_steps
+        self.interactive = config.i
 
         self.bodies = []
         self.contacts = []
@@ -141,6 +142,7 @@ class TaskSimulator (Framework):
     def run_sim(self):
         if self.task is None:
             raise Exception
+        
         timeStep = 1.0 / self.frequency
         vel_iters, pos_iters = 6, 2
 
@@ -159,6 +161,7 @@ class TaskSimulator (Framework):
             self.logger.info(self.serialize_timestamp(i))
             
             self.contacts.clear()
+        self.cleanUp()
 
     def cleanUp(self):
         if len(self.bodies) == 0:
@@ -166,6 +169,7 @@ class TaskSimulator (Framework):
         for body in self.bodies:
             self.world.DestroyBody(body)
         self.bodies = []
+        self.contacts.clear()
 
 
     def Keyboard(self, key):

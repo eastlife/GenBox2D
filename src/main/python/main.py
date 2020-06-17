@@ -4,6 +4,8 @@ import os
 
 import logging
 import time
+from datetime import datetime
+
 import argparse
 from classes.WorldProperties import WorldProperties
 from classes.Generator import Generator
@@ -31,9 +33,16 @@ def get_config_from_args():
 def main():
     config = get_config_from_args()
 
-    logging.basicConfig(filename=config.log_file, filemode='w')
+    logging.basicConfig(filename=config.log_file, filemode='w', format='%(message)s')
     logger=logging.getLogger()
     logger.setLevel(logging.INFO)
+
+    # Create directory for log file
+    now = datetime.now()
+
+    now_dir = now.strftime("%m-%d-%Y-%H-%M-%S")
+    now_dir = "log-" + now_dir
+    os.mkdir(now_dir)
 
     generator = Generator(config)
 
@@ -53,7 +62,10 @@ def main():
     if config.i:
         simulator.run()
     else:
-        simulator.run_sim()
+        for i in range(len(generator.tasks)):
+            print("**Run task**")
+            simulator.run_sim()
+            simulator.next_task()
     
     
     # for task in generator.tasks:
