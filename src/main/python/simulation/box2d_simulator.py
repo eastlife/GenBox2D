@@ -1,4 +1,7 @@
+import os
 import json
+import logging
+from datetime import datetime
 
 from Box2D.examples.framework import (Framework, Keys)
 
@@ -49,12 +52,11 @@ class TaskSimulator (Framework):
     name = "GenBox2D GUI Tool"
     description = "Visualization for PHYRE tasks."
 
-    def __init__(self, config, tasks, properties, logger):
+    def __init__(self, config, tasks, properties):
         super(TaskSimulator, self).__init__()
 
         self.tasks = tasks
         self.properties = properties
-        self.logger = logger
 
         self.frequency = config.frequency
         self.total_steps = config.total_steps
@@ -79,9 +81,23 @@ class TaskSimulator (Framework):
              (-self.SCENE_WIDTH / 2, -self.SCENE_HEIGHT / 2)]
         )
 
-
         self.task_idx = 0
         self.task = None
+
+        self.logger = None
+        if not self.interactive:
+            # Create logger
+            logger = logging.getLogger()
+            logger.setLevel(logging.INFO)
+            self.logger = logger
+
+            # Create directory for log file
+            now = datetime.now()
+
+            now_dir = now.strftime("%m-%d-%Y-%H-%M-%S")
+            now_dir = "log-" + now_dir
+            os.mkdir(now_dir)
+            self.logging_dir = now_dir
 
         self.load_task()
 
@@ -91,6 +107,8 @@ class TaskSimulator (Framework):
             return False
         self.task = self.tasks[self.task_idx]
         featurized_objects = self.task.initial_featurized_objects
+
+        print("**Loading task: {task_id}**".format(task_id = self.task.task_id))
         for i in range(featurized_objects.num_objects):
             shape = featurized_objects.shapes[i]
             print("shape: " + shape)
@@ -112,8 +130,7 @@ class TaskSimulator (Framework):
             if body is not None:
                 self.bodies.append(body)
 
-        print("task loaded")
-        print(self.task)
+        print("**Task {task_id} loaded**".format(task_id = self.task.task_id))
 
     def next_task(self):
         if self.task_idx < len(self.tasks):
@@ -142,12 +159,17 @@ class TaskSimulator (Framework):
     def run_sim(self):
         if self.task is None:
             raise Exception
+
+        if self.logger is not None:
+            task_handler = logging.FileHandler(self.logging_dir + '/{task}.log'.format(task = self.task.task_id))
+            task_handler.setLevel(logging.INFO)
+            self.logger.addHandler(task_handler)
+
+            # log initial positions
+            self.logger.info(self.task.serialize_task())
         
         timeStep = 1.0 / self.frequency
         vel_iters, pos_iters = 6, 2
-
-        # print inital positions
-        self.logger.info(self.task.serialize_task())
 
         for i in range(self.total_steps):
             # Instruct the world to perform a single step of simulation. It is
@@ -158,10 +180,15 @@ class TaskSimulator (Framework):
             # should know about this function.
             self.world.ClearForces()
         
-            self.logger.info(self.serialize_timestamp(i))
+            if self.logger is not None:
+                self.logger.info(self.serialize_timestamp(i))
             
             self.contacts.clear()
+
         self.cleanUp()
+
+        if self.logger is not None:
+            self.logger.removeHandler(task_handler)
 
     def cleanUp(self):
         if len(self.bodies) == 0:
