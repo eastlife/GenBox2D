@@ -68,10 +68,18 @@ Some controls when interacting with GUI:
 
 Dataset mode will generate datasets with the way you want. The generated data are organized in the following file structure.
 
-(TODO)
+```
+log-06-17-2020-01-15-31
+├── 00000:000.log
+├── 00000:001.log
+├── 00001:000.log
+├── 00001:001.log
+├── 00002:007.log
+├── 00002:011.log
+└── ...
+```
 
-
-For each task, we save the information for the task and simulation results for every timestamp into JSON format. You can see the example JSON files under the `GenBox2D/example` folder.
+For each task, we save the information for the task and simulation results for every timestamp into JSON format. You can see the example JSON files under the [GenBox2D/example](https://github.com/eastlife/GenBox2D/tree/master/example) folder.
 
 
 ## Configure your datasets
