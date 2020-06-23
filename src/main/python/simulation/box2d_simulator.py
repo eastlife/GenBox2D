@@ -61,6 +61,7 @@ class TaskSimulator (Framework):
         self.frequency = config.frequency
         self.total_steps = config.total_steps
         self.interactive = config.i
+        self.always_active = config.always_active
 
         self.bodies = []
         self.contacts = []
@@ -184,6 +185,10 @@ class TaskSimulator (Framework):
                 self.logger.info(self.serialize_timestamp(i))
             
             self.contacts.clear()
+
+            if self.always_active:
+                for body in self.bodies:
+                    body.awake = True
 
         self.cleanUp()
 
