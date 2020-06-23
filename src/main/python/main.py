@@ -22,7 +22,7 @@ def get_config_from_args():
     parser.add_argument("--frequency", help="frequency for box2d steps", type=int, default=60)
     parser.add_argument("--total_steps", help="total sampling steps", type=int, default=600)
 
-    parser.add_argument("--aways_active", help="set objects in the scene to be active at all times", action="store_true", default=False)
+    parser.add_argument("--always_active", help="set objects in the scene to be active at all times", action="store_true", default=False)
 
     config = parser.parse_args()
     return config
