@@ -235,6 +235,9 @@ class TaskSimulator (Framework):
             json_body["pos_x"] = body.position[0]
             json_body["pos_y"] = body.position[1]
             json_body["angle"] = body.angle
+            json_body["velocity_x"] = body.linearVelocity[0]
+            json_body["velocity_y"] = body.linearVelocity[1]
+            json_body["angular_velocity"] = body.angularVelocity
             json_bodies.append(json_body)
 
         json_dict["bodies"] = json_bodies
