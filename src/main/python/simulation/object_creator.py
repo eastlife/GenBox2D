@@ -82,8 +82,8 @@ def create_jar(world, properties, scene_width, scene_height, shape, color, diame
     scaled_thickness = diameter_percent_to_length(scene_width, 0.005)
 
     literal_length_adjust = 0.75 * scaled_diameter
-    literal_angle = 0.08
-    literal_x_adjust = literal_length_adjust * literal_angle
+    literal_angle = 0.05
+    literal_x_adjust = 3 * literal_length_adjust * literal_angle
 
     bottom_length_adjust = 0.6 * scaled_diameter
     bottom_y_adjust = 0.15 * scaled_diameter
