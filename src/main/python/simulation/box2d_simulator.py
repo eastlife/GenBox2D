@@ -52,7 +52,7 @@ class TaskSimulator (Framework):
     name = "GenBox2D GUI Tool"
     description = "Visualization for PHYRE tasks."
 
-    def __init__(self, config, tasks, properties):
+    def __init__(self, config, tasks, properties, action):
         super(TaskSimulator, self).__init__()
 
         self.tasks = tasks
@@ -65,6 +65,7 @@ class TaskSimulator (Framework):
 
         self.bodies = []
         self.contacts = []
+        self.uniform_action = action
 
         self.world.gravity = (0.0, properties.gravity)
         self.world.contactListener = MyListener(self.bodies, self.contacts)
@@ -130,8 +131,25 @@ class TaskSimulator (Framework):
 
             if body is not None:
                 self.bodies.append(body)
+        
+        if self.uniform_action is not None:
+            self.add_action(self.uniform_action)
 
         print("**Task {task_id} loaded**".format(task_id = self.task.task_id))
+
+    def add_action(self, action):
+        print(action)
+        x = action[0]
+        y = action[1]
+        diameter = action[2] / 2
+        shape = "BALL"
+        color = "RED"
+        angle = 0
+        action_object = create_body(self.world, self.properties, self.SCENE_WIDTH, self.SCENE_HEIGHT, shape, color, diameter, x, y, angle)
+        self.bodies.append(action_object)
+
+    def init_action(self, action):
+        self.uniform_action = action
 
     def next_task(self):
         if self.task_idx < len(self.tasks):
@@ -200,7 +218,7 @@ class TaskSimulator (Framework):
             return
         for body in self.bodies:
             self.world.DestroyBody(body)
-        self.bodies = []
+        self.bodies.clear()
         self.contacts.clear()
 
 

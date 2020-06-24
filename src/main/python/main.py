@@ -33,6 +33,10 @@ def main():
 
     generator = Generator(config)
 
+    action = generator.get_action()
+    print('action')
+    print(action)
+
     config_path_abs = os.path.join(os.getcwd(), "config", config.config_path)
 
     properties = WorldProperties(config_path_abs)
@@ -44,7 +48,7 @@ def main():
     sys.argv = sys.argv[:1]
     from simulation.box2d_simulator import TaskSimulator
 
-    simulator = TaskSimulator(config, generator.tasks, properties)
+    simulator = TaskSimulator(config, generator.tasks, properties, action)
 
     if config.i:
         simulator.run()
