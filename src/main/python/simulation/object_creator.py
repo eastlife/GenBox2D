@@ -58,23 +58,39 @@ def create_body(world, properties, scene_width, scene_height, shape, color, diam
             body = world.CreateStaticBody(shapes=edge)
 
     elif shape == "JAR":
-        center = (width_percent_to_x(scene_width, x), height_percent_to_y(scene_height, y))
+        # constants
+        scaled_diameter = diameter_percent_to_length(scene_width, diameter)
+        scaled_literal_offset = 0.02 * scaled_diameter
+        scaled_thickness = diameter_percent_to_length(scene_width, 0.01)
+
+        literal_angle = 0.075
+        literal_x_adjust = 2 * scaled_thickness
+
+        bottom_length_adjust = 0.6 * scaled_diameter
+        bottom_y_adjust = 3 * scaled_thickness
+
+        center_y_adjust = 1.5 * scaled_thickness
+        center = (width_percent_to_x(scene_width, x), height_percent_to_y(scene_height, y) - center_y_adjust)
+
         literal1_shape = b2PolygonShape()
-        literal1_shape.SetAsBox(diameter_percent_to_length(scene_width, diameter) / 2, 
-                                diameter_percent_to_length(scene_width, 0.01), 
-                                b2Vec2(diameter_percent_to_length(scene_width, 0.05), diameter_percent_to_length(scene_width, 0.05)), 
-                                b2_pi/2)
+        literal1_shape.SetAsBox(diameter_percent_to_length(scene_width, diameter) / 3, # hx
+                                scaled_thickness, # hy
+                                b2Vec2(diameter_percent_to_length(scene_width, scaled_literal_offset) - literal_x_adjust, 
+                                       diameter_percent_to_length(scene_width, scaled_literal_offset * 0.5)), # offset 
+                                b2_pi/2 - literal_angle) # angle
         # literal1_shape.position.set(b2Vec2(0.1, 0.1))
         literal2_shape = b2PolygonShape()
-        literal2_shape.SetAsBox(diameter_percent_to_length(scene_width, diameter) / 2, 
-                                diameter_percent_to_length(scene_width, 0.01), 
-                                b2Vec2(diameter_percent_to_length(scene_width, -0.05), diameter_percent_to_length(scene_width, 0.05)), 
-                                b2_pi/2)
+        literal2_shape.SetAsBox(diameter_percent_to_length(scene_width, diameter) / 3, 
+                                scaled_thickness, 
+                                b2Vec2(diameter_percent_to_length(scene_width, - scaled_literal_offset) + literal_x_adjust, 
+                                       diameter_percent_to_length(scene_width, scaled_literal_offset * 0.5)), 
+                                b2_pi/2 + literal_angle)
         # literal1_shape.pos.set(b2Vec2(-0.1, 0.1))
         bottom_shape = b2PolygonShape()
-        bottom_shape.SetAsBox(diameter_percent_to_length(scene_width, diameter) / 2, 
-                                diameter_percent_to_length(scene_width, 0.01), 
-                                b2Vec2(diameter_percent_to_length(scene_width, 0), diameter_percent_to_length(scene_width, 0)), 
+        bottom_shape.SetAsBox(bottom_length_adjust / 2, 
+                                scaled_thickness, 
+                                b2Vec2(diameter_percent_to_length(scene_width, 0), 
+                                       diameter_percent_to_length(scene_width, 0) - bottom_y_adjust), 
                                 0)
 
         literal1_fixture = b2FixtureDef(shape=literal1_shape,
