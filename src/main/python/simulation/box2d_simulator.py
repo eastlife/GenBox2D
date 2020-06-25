@@ -141,7 +141,7 @@ class TaskSimulator (Framework):
         print(action)
         x = action[0]
         y = action[1]
-        diameter = action[2] / 2
+        diameter = action[2] * 2
         shape = "BALL"
         color = "RED"
         angle = 0

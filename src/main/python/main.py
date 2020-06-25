@@ -33,9 +33,14 @@ def main():
 
     generator = Generator(config)
 
-    action = generator.get_action()
+    action = generator.get_single_action()
+    print('ids')
+    print(generator.simulator.task_ids)
     print('action')
     print(action)
+    actions = generator.get_multiple_actions(10)
+    print('actions')
+    print(actions)
 
     config_path_abs = os.path.join(os.getcwd(), "config", config.config_path)
 

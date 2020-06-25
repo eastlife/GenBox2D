@@ -1,6 +1,7 @@
 import phyre
 from .Task import Task
 from read_tasks import load_compiled_task_dict
+from phyre import action_mappers
 
 
 '''
@@ -14,6 +15,8 @@ class Generator:
         self.num_mods = config.num_mods
         self.action_tier = config.action_tier
         self.task_id = config.task_id
+
+        self.action_mappers = action_mappers.ACTION_MAPPERS[self.action_tier]()
 
         tasks_map, _ = load_compiled_task_dict()
         task_ids = []
@@ -40,7 +43,18 @@ class Generator:
             self.tasks.append(task)
 
     '''
-    returns (task, height, width)
+    returns (x, y, radius) (percentage of SCENE_WIDTH)
     '''
-    def get_action(self, valid=True):
-        return self.simulator.sample(valid_only=valid, rng=None)
+    def get_single_action(self, valid=True):
+        action = self.simulator.sample(valid_only=True, rng=None)
+        user_input = self.action_mappers.action_to_user_input(action)[0]
+        # assume only for tier 'ball' (one ball only) 
+        ball = user_input.balls[0]
+        print("action")
+        print(ball.position.x) # action * 256 = ball.position.x
+        print(ball.position.y) # action * 256 = ball.position.y
+        print(ball.radius) # don't know how to get radius from action
+        return (action[0], action[1], ball.radius / 256)
+    
+    def get_multiple_actions(self, num, seed=1):
+        return self.simulator.build_discrete_action_space(num, seed=seed)
