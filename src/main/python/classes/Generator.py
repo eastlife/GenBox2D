@@ -42,19 +42,35 @@ class Generator:
             task = Task(id, initial_scene, initial_featurized_objects)
             self.tasks.append(task)
 
+
+    def get_single_action(self, valid=True):
+        action = self.simulator.sample(valid_only=valid, rng=None)
+        ball_info = self.action_to_ball_info(action)
+        return ball_info
+
+    def get_multiple_actions(self, num=10, valid=True):
+        actions = []
+        for i in range(num):
+            ball_info = self.get_single_action(valid=valid)
+            actions.append(ball_info)
+        return actions
+    
     '''
     returns (x, y, radius) (percentage of SCENE_WIDTH)
+    only for one ball tier
     '''
-    def get_single_action(self, valid=True):
-        action = self.simulator.sample(valid_only=True, rng=None)
+    def action_to_ball_info(self, action):
+        PHYRE_WIDTH = 256
         user_input = self.action_mappers.action_to_user_input(action)[0]
         # assume only for tier 'ball' (one ball only) 
         ball = user_input.balls[0]
+        '''
         print("action")
         print(ball.position.x) # action * 256 = ball.position.x
         print(ball.position.y) # action * 256 = ball.position.y
         print(ball.radius) # don't know how to get radius from action
-        return (action[0], action[1], ball.radius / 256)
+        '''
+        return (ball.position.x / PHYRE_WIDTH, ball.position.y / PHYRE_WIDTH, ball.radius / PHYRE_WIDTH)
     
-    def get_multiple_actions(self, num, seed=1):
-        return self.simulator.build_discrete_action_space(num, seed=seed)
+    # def get_multiple_actions(self, num, seed=1):
+    #     return self.simulator.build_discrete_action_space(num, seed=seed)
