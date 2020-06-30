@@ -62,9 +62,13 @@ class TaskSimulator (Framework):
         self.total_steps = config.total_steps
         self.interactive = config.i
         self.always_active = config.always_active
+        self.solved_threshold = config.solved_threshold
 
+        # mutable fields
         self.bodies = []
         self.contacts = []
+        self.goal_objects = []
+        self.max_goal_contact_steps = 0
         self.uniform_action = action
 
         self.world.gravity = (0.0, properties.gravity)
@@ -73,15 +77,7 @@ class TaskSimulator (Framework):
         self.SCENE_WIDTH = 20.0
         self.SCENE_HEIGHT = 20.0
 
-        # The boundaries
-        ground = self.world.CreateBody(position=(0, self.SCENE_HEIGHT / 2))
-        ground.CreateEdgeChain(
-            [(-self.SCENE_WIDTH / 2, -self.SCENE_HEIGHT / 2),
-             (-self.SCENE_WIDTH / 2, self.SCENE_HEIGHT / 2),
-             (self.SCENE_WIDTH / 2, self.SCENE_HEIGHT / 2),
-             (self.SCENE_WIDTH / 2, -self.SCENE_HEIGHT / 2),
-             (-self.SCENE_WIDTH / 2, -self.SCENE_HEIGHT / 2)]
-        )
+        self._create_boundaries()
 
         self.task_idx = 0
         self.task = None
@@ -103,6 +99,16 @@ class TaskSimulator (Framework):
 
         self.load_task()
 
+    def _create_boundaries(self):
+        # The boundaries
+        ground = self.world.CreateBody(position=(0, self.SCENE_HEIGHT / 2))
+        ground.CreateEdgeChain(
+            [(-self.SCENE_WIDTH / 2, -self.SCENE_HEIGHT / 2),
+             (-self.SCENE_WIDTH / 2, self.SCENE_HEIGHT / 2),
+             (self.SCENE_WIDTH / 2, self.SCENE_HEIGHT / 2),
+             (self.SCENE_WIDTH / 2, -self.SCENE_HEIGHT / 2),
+             (-self.SCENE_WIDTH / 2, -self.SCENE_HEIGHT / 2)]
+        )
 
     def load_task(self):
         if self.task_idx >= len(self.tasks) or self.task_idx < 0:
@@ -129,6 +135,9 @@ class TaskSimulator (Framework):
 
             if body is not None:
                 self.bodies.append(body)
+
+        for goal in self.task.goal_objects:
+            self.goal_objects.append(goal)
             
         if self.uniform_action is not None:
             self.add_action(self.uniform_action)
@@ -213,6 +222,18 @@ class TaskSimulator (Framework):
         if self.logger is not None:
             self.logger.removeHandler(task_handler)
 
+    # TODO
+    def update_goal_contact(self):
+        pass
+
+    # TODO
+    def is_contact(self):
+        return False
+        
+    def judge_contact(self):
+        return self.max_goal_contact_steps >= self.solved_threshold
+
+
     def cleanUp(self):
         if len(self.bodies) == 0:
             return
@@ -220,6 +241,7 @@ class TaskSimulator (Framework):
             self.world.DestroyBody(body)
         self.bodies.clear()
         self.contacts.clear()
+        self.goal_objects.clear()
 
 
     def Keyboard(self, key):

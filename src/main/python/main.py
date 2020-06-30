@@ -24,6 +24,8 @@ def get_config_from_args():
 
     parser.add_argument("--always_active", help="set objects in the scene to be active at all times", action="store_true", default=False)
 
+    parser.add_argument("--solved_threshold", help="the minimum frames (steps) for two goal objects contacted", type=int, default=60)
+
     config = parser.parse_args()
     return config
 

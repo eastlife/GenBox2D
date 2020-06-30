@@ -71,15 +71,7 @@ class ContactDetector (Framework):
         self.SCENE_WIDTH = 20.0
         self.SCENE_HEIGHT = 20.0
 
-        # The boundaries
-        ground = self.world.CreateBody(position=(0, self.SCENE_HEIGHT / 2))
-        ground.CreateEdgeChain(
-            [(-self.SCENE_WIDTH / 2, -self.SCENE_HEIGHT / 2),
-             (-self.SCENE_WIDTH / 2, self.SCENE_HEIGHT / 2),
-             (self.SCENE_WIDTH / 2, self.SCENE_HEIGHT / 2),
-             (self.SCENE_WIDTH / 2, -self.SCENE_HEIGHT / 2),
-             (-self.SCENE_WIDTH / 2, -self.SCENE_HEIGHT / 2)]
-        )
+        self._create_boundaries()
 
         self.task_idx = 0
         self.task = None
@@ -101,6 +93,16 @@ class ContactDetector (Framework):
 
         self.load_task()
 
+    def _create_boundaries(self):
+        # The boundaries
+        ground = self.world.CreateBody(position=(0, self.SCENE_HEIGHT / 2))
+        ground.CreateEdgeChain(
+            [(-self.SCENE_WIDTH / 2, -self.SCENE_HEIGHT / 2),
+             (-self.SCENE_WIDTH / 2, self.SCENE_HEIGHT / 2),
+             (self.SCENE_WIDTH / 2, self.SCENE_HEIGHT / 2),
+             (self.SCENE_WIDTH / 2, -self.SCENE_HEIGHT / 2),
+             (-self.SCENE_WIDTH / 2, -self.SCENE_HEIGHT / 2)]
+        )
 
     def load_task(self):
         if self.task_idx >= len(self.tasks) or self.task_idx < 0:
@@ -196,7 +198,7 @@ class ContactDetector (Framework):
             return
         for body in self.bodies:
             self.world.DestroyBody(body)
-        self.bodies = []
+        self.bodies.clear()
         self.contacts.clear()
 
 
