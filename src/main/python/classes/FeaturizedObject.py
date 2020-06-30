@@ -10,3 +10,8 @@ class FeaturizedObject:
         self.initial_x = initial_x
         self.initial_y = initial_y
         self.initial_angle = initial_angle
+
+    def is_goal(self):
+        if self.color == "BLUE" or self.color == "PURPLE" or self.color == "GREEN":
+            return True
+        return False

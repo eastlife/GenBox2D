@@ -108,30 +108,28 @@ class TaskSimulator (Framework):
         if self.task_idx >= len(self.tasks) or self.task_idx < 0:
             return False
         self.task = self.tasks[self.task_idx]
-        featurized_objects = self.task.initial_featurized_objects
 
         print("**Loading task: {task_id}**".format(task_id = self.task.task_id))
-        for i in range(featurized_objects.num_objects):
-            shape = featurized_objects.shapes[i]
+        for featurized_object in self.task.featurized_objects:
+            shape = featurized_object.shape
             print("shape: " + shape)
-            color = featurized_objects.colors[i]
+            color = featurized_object.color
             print("color: " + color)
-            diameter = featurized_objects.diameters[i]
+            diameter = featurized_object.diameter
             print("diameter: " + str(diameter))
-            state = featurized_objects.states[0][i]
-            print("state: ")
-            print(state)
-            x = state[0]
-            y = state[1]
-            angle = state[2]
+            x = featurized_object.initial_x
+            y = featurized_object.initial_y
+            angle = featurized_object.initial_angle
             print("angle")
             print(angle)
 
-            body = create_body(self.world, self.properties, self.SCENE_WIDTH, self.SCENE_HEIGHT, shape, color, diameter, x, y, angle)
+            body = create_body(self.world, self.properties, 
+                                self.SCENE_WIDTH, self.SCENE_HEIGHT, 
+                                shape, color, diameter, x, y, angle)
 
             if body is not None:
                 self.bodies.append(body)
-        
+            
         if self.uniform_action is not None:
             self.add_action(self.uniform_action)
 
@@ -145,7 +143,9 @@ class TaskSimulator (Framework):
         shape = "BALL"
         color = "RED"
         angle = 0
-        action_object = create_body(self.world, self.properties, self.SCENE_WIDTH, self.SCENE_HEIGHT, shape, color, diameter, x, y, angle)
+        action_object = create_body(self.world, self.properties, 
+                                    self.SCENE_WIDTH, self.SCENE_HEIGHT, 
+                                    shape, color, diameter, x, y, angle)
         self.bodies.append(action_object)
 
     def init_action(self, action):
