@@ -69,6 +69,7 @@ class TaskSimulator (Framework):
         self.contacts = []
         self.goal_objects = []
         self.max_goal_contact_steps = 0
+        self.curr_goal_contact_steps = 0
         self.uniform_action = action
 
         self.world.gravity = (0.0, properties.gravity)
@@ -136,8 +137,8 @@ class TaskSimulator (Framework):
             if body is not None:
                 self.bodies.append(body)
 
-        for goal in self.task.goal_objects:
-            self.goal_objects.append(goal)
+            if featurized_object.is_goal():
+                self.goal_objects.append(body)   
             
         if self.uniform_action is not None:
             self.add_action(self.uniform_action)
@@ -210,12 +211,19 @@ class TaskSimulator (Framework):
         
             if self.logger is not None:
                 self.logger.info(self.serialize_timestamp(i))
-            
+
+            self.update_goal_contact()
             self.contacts.clear()
 
             if self.always_active:
                 for body in self.bodies:
                     body.awake = True
+
+        if self.curr_goal_contact_steps > self.max_goal_contact_steps:
+            self.max_goal_contact_steps = self.curr_goal_contact_steps
+
+        if self.logger is not None:
+            self.logger.info(self.serialize_solved())
 
         self.cleanUp()
 
@@ -224,21 +232,30 @@ class TaskSimulator (Framework):
 
     # TODO
     def update_goal_contact(self):
-        pass
+        for contact in self.contacts:
+            body_a = self.bodies[contact["body_a"]]
+            body_b = self.bodies[contact["body_b"]]
+            if body_a in self.goal_objects and body_b in self.goal_objects:
+                print(contact)
+                self.curr_goal_contact_steps += 1
+            else:
+                if self.curr_goal_contact_steps > self.max_goal_contact_steps:
+                    self.max_goal_contact_steps = self.curr_goal_contact_steps
+                self.curr_goal_contact_steps = 0
 
-    # TODO
-    def is_contact(self):
-        return False
         
-    def judge_contact(self):
+    def is_solved(self):
         return self.max_goal_contact_steps >= self.solved_threshold
 
 
+    # reset all mutable variables
     def cleanUp(self):
         if len(self.bodies) == 0:
             return
         for body in self.bodies:
             self.world.DestroyBody(body)
+        self.curr_goal_contact_steps = 0
+        self.max_goal_contact_steps = 0
         self.bodies.clear()
         self.contacts.clear()
         self.goal_objects.clear()
@@ -263,6 +280,14 @@ class TaskSimulator (Framework):
         json_dict["timestamp"] = timestamp
         json_dict["body_info"] = self.log_bodies()
         json_dict["contact_info"] = self.log_contacts()
+        return json.dumps(json_dict)
+
+    def serialize_solved(self):
+        json_dict = {}
+        json_dict["task_id"] = self.task.task_id
+        json_dict["is_goal_valid"] = (len(self.goal_objects) == 2)
+        json_dict["max_goal_contact_steps"] = self.max_goal_contact_steps
+        json_dict["is_solved"] = self.is_solved()
         return json.dumps(json_dict)
 
     def log_bodies(self):
