@@ -1,6 +1,7 @@
 from .object_drawer import draw_scene
 from deserializer import deserialize
 from classes.FeaturizedObject import FeaturizedObject
+from PIL import Image, ImageDraw
 
 class Visualizer:
 
@@ -32,5 +33,13 @@ class Visualizer:
     def replay(self, timestamp_info):
         pass
 
+
     def draw_single_picture(self):
-        draw_scene(self.scene_width, self.scene_height, self.featurized_objects)
+
+        image = Image.new("RGB", (self.scene_width, self.scene_height), "white")
+        draw = ImageDraw.Draw(image)
+
+        draw_scene(draw, self.scene_width, self.scene_height, self.featurized_objects)
+
+        image = image.transpose(Image.FLIP_TOP_BOTTOM)
+        image.show()
