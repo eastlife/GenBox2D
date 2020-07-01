@@ -10,27 +10,36 @@ class Visualizer:
         self.scene_height = 256
 
         path = config.file_path
-        task_info, timestamp_info = deserialize(path)
+        task_info, action_info, timestamp_info, solved_info = deserialize(path)
         print(task_info)
+        print(action_info)
         print(timestamp_info[0])
         print(timestamp_info[-1])
+        print(solved_info)
         self.task_info = task_info
+        self.action_info = action_info
         self.timestamp_info = timestamp_info
+        self.solved_info = solved_info
         self.featurized_objects = self.get_objects_from_json(task_info)
+        self.featurized_objects.extend(self.get_objects_from_json(action_info))
 
 
     def get_objects_from_json(self, task_info):
         featurized_objects = []
         for featurized_object_json in task_info['featurized_objects']:
-            shape = featurized_object_json['shape']
-            color = featurized_object_json['color']
-            diameter = featurized_object_json['diameter']
-            x = featurized_object_json['initial_x']
-            y = featurized_object_json['initial_y']
-            angle = featurized_object_json['initial_angle']
-            featurized_object = FeaturizedObject(shape, color, diameter, x, y, angle)
+            featurized_object = self.get_object_from_json(featurized_object_json)
             featurized_objects.append(featurized_object)
         return featurized_objects
+
+    def get_object_from_json(self, featurized_object_json):
+        shape = featurized_object_json['shape']
+        color = featurized_object_json['color']
+        diameter = featurized_object_json['diameter']
+        x = featurized_object_json['initial_x']
+        y = featurized_object_json['initial_y']
+        angle = featurized_object_json['initial_angle']
+        featurized_object = FeaturizedObject(shape, color, diameter, x, y, angle)
+        return featurized_object
 
 
     def replay(self):

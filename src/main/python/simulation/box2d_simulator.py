@@ -9,6 +9,7 @@ from Box2D import (b2FixtureDef, b2PolygonShape, b2CircleShape, b2EdgeShape,
                    b2Transform, b2Mul,
                    b2_pi, b2ContactListener, b2Contact, b2ContactImpulse)
 
+from classes.FeaturizedObject import FeaturizedObject
 
 from .object_creator import create_body
 
@@ -66,6 +67,7 @@ class TaskSimulator (Framework):
 
         # mutable fields
         self.bodies = []
+        self.action_bodies = []
         self.contacts = []
         self.goal_objects = []
         self.max_goal_contact_steps = 0
@@ -157,6 +159,8 @@ class TaskSimulator (Framework):
                                     self.SCENE_WIDTH, self.SCENE_HEIGHT, 
                                     shape, color, diameter, x, y, angle)
         self.bodies.append(action_object)
+        featurized_object = FeaturizedObject(shape, color, diameter, x, y, angle)
+        self.action_bodies.append(featurized_object)
 
     def init_action(self, action):
         self.uniform_action = action
@@ -196,6 +200,7 @@ class TaskSimulator (Framework):
 
             # log initial positions
             self.logger.info(self.task.serialize_task())
+            self.logger.info(self.serialize_action())
         
         timeStep = 1.0 / self.frequency
         vel_iters, pos_iters = 6, 2
@@ -257,6 +262,7 @@ class TaskSimulator (Framework):
         self.curr_goal_contact_steps = 0
         self.max_goal_contact_steps = 0
         self.bodies.clear()
+        self.action_bodies.clear()
         self.contacts.clear()
         self.goal_objects.clear()
 
@@ -281,6 +287,29 @@ class TaskSimulator (Framework):
         json_dict["body_info"] = self.log_bodies()
         json_dict["contact_info"] = self.log_contacts()
         return json.dumps(json_dict)
+
+    def serialize_action(self):
+        json_dict = {}
+        
+        json_featurized_objects = []
+        featurized_objects = self.action_bodies
+        num_objects = len(featurized_objects)
+        json_dict["num_action_objects"] = num_objects
+        for i in range(num_objects):
+            json_featurized_object = {}
+            json_featurized_object["shape"] = featurized_objects[i].shape
+            json_featurized_object["color"] = featurized_objects[i].color
+            json_featurized_object["diameter"] = float(featurized_objects[i].diameter)
+
+            json_featurized_object["initial_x"] = float(featurized_objects[i].initial_x)
+            json_featurized_object["initial_y"] = float(featurized_objects[i].initial_y)
+            json_featurized_object["initial_angle"] = float(featurized_objects[i].initial_angle)
+
+            json_featurized_objects.append(json_featurized_object)
+
+        json_dict["featurized_objects"] = json_featurized_objects
+        return json.dumps(json_dict)
+
 
     def serialize_solved(self):
         json_dict = {}
