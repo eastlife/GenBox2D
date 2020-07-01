@@ -35,7 +35,6 @@ def draw_ball(draw, scene_width, scene_height, shape, color, diameter, x, y, ang
     center = (x * scene_width, y * scene_height)
 
     radius = diameter * scene_width / 2 
-    print(radius)
     circle_vertices = (
         center[0] - radius,
         center[1] - radius,

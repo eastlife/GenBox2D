@@ -18,7 +18,7 @@ def get_config_from_args():
 def main():
     config = get_config_from_args()
     visualizer = Visualizer(config)
-    visualizer.draw_single_picture()
+    visualizer.replay()
 
 
 if __name__ == '__main__':
