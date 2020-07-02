@@ -151,6 +151,7 @@ class TaskSimulator (Framework):
         print("**Task {task_id} loaded**".format(task_id = self.task.task_id))
 
     def add_action(self, action):
+        print("Load action:")
         print(action)
         x = action[0]
         y = action[1]
@@ -238,13 +239,11 @@ class TaskSimulator (Framework):
         if self.logger is not None:
             self.logger.removeHandler(task_handler)
 
-    # TODO
     def update_goal_contact(self):
         for contact in self.contacts:
             body_a = self.bodies[contact["body_a"]]
             body_b = self.bodies[contact["body_b"]]
             if body_a in self.goal_objects and body_b in self.goal_objects:
-                print(contact)
                 self.curr_goal_contact_steps += 1
             else:
                 if self.curr_goal_contact_steps > self.max_goal_contact_steps:

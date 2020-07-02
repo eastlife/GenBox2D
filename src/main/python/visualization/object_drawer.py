@@ -28,7 +28,7 @@ def draw_scene(draw, scene_width, scene_height, featurized_objects):
         elif shape == "BAR":
             draw_bar(draw, scene_width, scene_height, shape, color, diameter, x, y, angle)
         elif shape == "JAR":
-            print("NOT IMPLEMENTED")
+            draw_jar(draw, scene_width, scene_height, shape, color, diameter, x, y, angle)
         else:
             print("NOT IMPLEMENTED")
 
@@ -57,7 +57,7 @@ def draw_bar(draw, scene_width, scene_height, shape, color, diameter, x, y, angl
     rectangle_center = (bar_x * scene_width, bar_y * scene_height)
     rectangle_width = 2
     rectangle_length = scene_width * bar_diameter
-    rectangle_angle = 360 * bar_angle
+    rectangle_angle =  bar_angle * 180.0 / math.pi
 
     rectangle_vertices = (
         (rectangle_center[0] + rectangle_length / 2, rectangle_center[1] + rectangle_width / 2),
@@ -71,7 +71,6 @@ def draw_bar(draw, scene_width, scene_height, shape, color, diameter, x, y, angl
     draw.polygon(rectangle_vertices, fill=color)
 
 def draw_jar(draw, scene_width, scene_height, shape, color, diameter, x, y, angle):
-    b2_pi = 3.1415926
     scaled_diameter = diameter_percent_to_length(scene_width, diameter)
     scaled_literal_offset = 0.02 * scaled_diameter
     scaled_thickness = diameter_percent_to_length(scene_width, 0.005)
@@ -87,7 +86,7 @@ def draw_jar(draw, scene_width, scene_height, shape, color, diameter, x, y, angl
     center = (width_percent_to_x(scene_width, x), height_percent_to_y(scene_height, y) - center_y_adjust)
 
     # literal 1 left
-    draw_rectangle(draw, scene_width, scene_height, shape, color, diameter, x, y, angle + 0.25 - 0.01, #(b2_pi/2 - literal_angle) * 180 / b2_pi, 
+    draw_rectangle(draw, scene_width, scene_height, shape, color, diameter, x, y, angle + 0.25 - 0.01, #(math.pi/2 - literal_angle) * 180 / math.pi, 
                                     offset = (scaled_diameter / 2, -scaled_diameter / 2))
                                     # offset = (diameter_percent_to_length(scene_width, scaled_literal_offset) - literal_x_adjust, 
                                     # diameter_percent_to_length(scene_width, scaled_literal_offset * 0.5)))
@@ -99,7 +98,7 @@ def draw_jar(draw, scene_width, scene_height, shape, color, diameter, x, y, angl
                                     diameter_percent_to_length(scene_width, scaled_literal_offset * 0.5)))
 
     # literal 2 right
-    draw_rectangle(draw, scene_width, scene_height, shape, color, diameter, x, y, angle + 0.25 + 0.01, #(b2_pi/2 + literal_angle) * 180 / b2_pi, 
+    draw_rectangle(draw, scene_width, scene_height, shape, color, diameter, x, y, angle + 0.25 + 0.01, #(math.pi/2 + literal_angle) * 180 / math.pi, 
                                     offset = (scaled_diameter / 2, scaled_diameter / 2))
                                     # offset = (diameter_percent_to_length(scene_width, scaled_literal_offset) + literal_x_adjust, 
                                     # diameter_percent_to_length(scene_width, scaled_literal_offset * 0.5)))
@@ -114,14 +113,14 @@ def draw_jar(draw, scene_width, scene_height, shape, color, diameter, x, y, angl
     #                         scaled_thickness, # hy
     #                         b2Vec2(diameter_percent_to_length(scene_width, scaled_literal_offset) - literal_x_adjust, 
     #                                 diameter_percent_to_length(scene_width, scaled_literal_offset * 0.5)), # offset 
-    #                         b2_pi/2 - literal_angle) # angle
+    #                         math.pi/2 - literal_angle) # angle
     # # literal1_shape.position.set(b2Vec2(0.1, 0.1))
     # literal2_shape = b2PolygonShape()
     # literal2_shape.SetAsBox(literal_length_adjust / 2, 
     #                         scaled_thickness, 
     #                         b2Vec2(diameter_percent_to_length(scene_width, - scaled_literal_offset) + literal_x_adjust, 
     #                                 diameter_percent_to_length(scene_width, scaled_literal_offset * 0.5)), 
-    #                         b2_pi/2 + literal_angle)
+    #                         math.pi/2 + literal_angle)
     # # literal1_shape.pos.set(b2Vec2(-0.1, 0.1))
     # bottom_shape = b2PolygonShape()
     # bottom_shape.SetAsBox(bottom_length_adjust / 2, 
@@ -140,7 +139,7 @@ def draw_rectangle(draw, scene_width, scene_height, shape, color, diameter, x, y
     rectangle_center = (bar_x * scene_width, bar_y * scene_height)
     rectangle_width = 2
     rectangle_length = scene_width * bar_diameter
-    rectangle_angle = 360 * bar_angle
+    rectangle_angle = bar_angle * 180.0 / math.pi
 
     rectangle_vertices = (
         (rectangle_center[0] + offset[0] + rectangle_length / 2, rectangle_center[1] + offset[1] + rectangle_width / 2),

@@ -66,13 +66,14 @@ def create_bar(world, properties, scene_width, scene_height, shape, color, diame
     edge.vertices = [v1, v2]
     edge.position = center
 
+    bar_shape = b2PolygonShape(box=(diameter_percent_to_length(scene_width, diameter) / 2, scaled_thickness))
+    bar_fixture = b2FixtureDef(shape=bar_shape,
+                    density=properties.densities["bar"], friction=properties.frictions["bar"], restitution=properties.restitutions["bar"])
+
     if isDynamic:
-        bar_shape = b2PolygonShape(box=(diameter_percent_to_length(scene_width, diameter) / 2, scaled_thickness))
-        bar_fixture = b2FixtureDef(shape=bar_shape,
-                        density=properties.densities["bar"], friction=properties.frictions["bar"], restitution=properties.restitutions["bar"])
         body = world.CreateDynamicBody(position=center, fixtures=bar_fixture, angle= 2 * b2_pi * angle)
     else:
-        body = world.CreateStaticBody(shapes=edge)
+        body = world.CreateStaticBody(position=center, fixtures=bar_fixture, angle= 2 * b2_pi * angle)
     return body
 
 def create_jar(world, properties, scene_width, scene_height, shape, color, diameter, x, y, angle, isDynamic):
