@@ -1,6 +1,8 @@
 #!/usr/bin/env python
 import sys
 import os
+import phyre
+import matplotlib.pyplot as plt
 
 import argparse
 from classes.WorldProperties import WorldProperties
@@ -35,14 +37,22 @@ def main():
 
     generator = Generator(config)
 
-    action = generator.get_single_action()
+    raw_action, scaled_action = generator.get_single_action()
+
+    # # using PHYRE API to simulate and visualize
+    # for i in range(len(generator.simulator.task_ids)):
+    #     simulation = generator.simulator.simulate_action(i, raw_action, need_images=True)
+    #     image = phyre.observations_to_float_rgb(simulation.images[0])
+    #     print(image.shape)
+
+    #     plt.imsave(str(i) + ".png", image)
+
     print('ids')
     print(generator.simulator.task_ids)
-    print('action')
-    print(action)
-    actions = generator.get_multiple_actions(10)
-    print('actions')
-    print(actions)
+
+    # actions = generator.get_multiple_actions(10)
+    # print('actions')
+    # print(actions)
 
     config_path_abs = os.path.join(os.getcwd(), "config", config.config_path)
 
@@ -55,7 +65,7 @@ def main():
     sys.argv = sys.argv[:1]
     from simulation.box2d_simulator import TaskSimulator
 
-    simulator = TaskSimulator(config, generator.tasks, properties, action)
+    simulator = TaskSimulator(config, generator.tasks, properties, scaled_action)
 
     if config.i:
         simulator.run()
@@ -70,6 +80,7 @@ def main():
     #     simulator.add_task(task)
     # action = generator.get_action()
     print("done")
+
 
 
 
