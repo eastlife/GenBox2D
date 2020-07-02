@@ -79,10 +79,19 @@ log-06-17-2020-01-15-31
 └── ...
 ```
 
-For each task, we save the information for the task and simulation results for every timestamp into JSON format. You can see the example JSON files under the [GenBox2D/example](https://github.com/eastlife/GenBox2D/tree/master/example) folder.
+For each task, we save the information for the task, the action, simulation results for every timestamp, and the goal result into JSON format. You can see the example JSON files under the [GenBox2D/example](https://github.com/eastlife/GenBox2D/tree/master/example) folder. Each log file has 4 types of JSON, the first line is for the task infomation, the second line is for the action information, from the third line each line has the information of objects in one timestamp, and the last line is the JSON shows the task is solved or not.
 
 
 ## Configure your datasets
 
 GenBox2D provides multiple parameters to customize and prepare your datasets. Simply run `python main.py -h` to see these parameters. Also, you may want to change the physical properties by creating another config JSON under the `GenBox2D/config` folder.
+
+## Replay generated datasets
+
+Run `python replay.py [log_path]` to visualize the dataset, generating images or gifs from the log file. some configurable parameters:
+
+* `--log_path`: the path of the log file. It can be either a single file or a directory (will iterate through all log files under the directory).
+* `--dir`: use this flag to indicate the `log_file` is a directory
+* `--image`: generate jpg image for each frame
+* `--gif`: generate gif
 
