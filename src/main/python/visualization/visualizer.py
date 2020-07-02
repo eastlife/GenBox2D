@@ -10,25 +10,31 @@ class Visualizer:
     def __init__(self, config):
         self.scene_width = 256
         self.scene_height = 256
-
+        
+        self.is_dir = config.dir
         self.generate_image = config.image
         self.generate_gif = config.gif
-        path = config.file_path
+        self.path = config.log_path
+
+    def deserialize_log(self, path):
+        print("log file path: " + path)
         task_info, action_info, timestamp_info, solved_info = deserialize(path)
 
         self.log_time = solved_info["log_time"]
+        self.task_id = task_info["task_id"]
         print(self.log_time)
-        print(task_info)
-        print(action_info)
-        print(timestamp_info[0])
-        print(timestamp_info[-1])
-        print(solved_info)
+        # print(task_info)
+        # print(action_info)
+        # print(timestamp_info[0])
+        # print(timestamp_info[-1])
+        # print(solved_info)
         self.task_info = task_info
         self.action_info = action_info
         self.timestamp_info = timestamp_info
         self.solved_info = solved_info
         self.featurized_objects = self.get_objects_from_json(task_info)
         self.featurized_objects.extend(self.get_objects_from_json(action_info))
+
 
 
     def get_objects_from_json(self, task_info):
@@ -48,11 +54,27 @@ class Visualizer:
         featurized_object = FeaturizedObject(shape, color, diameter, x, y, angle)
         return featurized_object
 
+    def replay_dir(self):
+        logs = os.listdir(self.path)
+        for log_file in logs:
+            print("log file: " + log_file)
+        for log_file in logs:
+            print("log file: " + log_file)
+            
+            self.deserialize_log(self.path + "/" + log_file)
+            self.replay()
+            
+    def replay_file(self):
+        self.deserialize_log(self.path)
+        self.replay()
 
     def replay(self):
-        if self.generate_image:
-            image_path = "images-" + self.log_time
-            os.mkdir(image_path)
+        # self.deserialize_log(self.path)
+
+        # if self.generate_image:
+        #     image_path = "images/images-" + self.log_time + "-" + self.task_id
+        #     if not os.path.exists(image_path):
+        #         os.makedirs(image_path)
 
         self.draw_single_picture("initial")
         image_arr = []
@@ -70,8 +92,10 @@ class Visualizer:
             image = self.draw_single_picture(str(timestamp))
             image_arr.append(image)
         if self.generate_gif:
-            os.mkdir("gif")
-            image_arr[0].save("gif/" + self.log_time + ".gif", save_all=True, append_images=image_arr)
+            if not os.path.exists("gif"):
+                os.mkdir("gif")
+
+            image_arr[0].save("gif/" + self.log_time + "-" + self.task_id + ".gif", save_all=True, append_images=image_arr)
 
 
 
@@ -84,7 +108,9 @@ class Visualizer:
         image = image.transpose(Image.FLIP_TOP_BOTTOM)
 
         if self.generate_image:
-            image_path = "images-" + self.log_time
+            image_path = "images/images-" + self.log_time + "-" + self.task_id
+            if not os.path.exists(image_path):
+                os.makedirs(image_path)
             
             image.save(image_path + "/" + name + ".jpg")
         return image
