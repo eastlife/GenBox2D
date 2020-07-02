@@ -1,8 +1,10 @@
 import phyre
+import random
 from .Task import Task
 from read_tasks import load_compiled_task_dict
 from phyre import action_mappers
 
+random.seed(0)
 
 '''
 A class for Task.
@@ -43,18 +45,36 @@ class Generator:
             self.tasks.append(task)
 
 
-    def get_single_action(self, valid=True):
-        action = self.simulator.sample(valid_only=True, rng=None)
-        ball_info = self.action_to_ball_info(action)
-        return action, ball_info
+    def get_single_action(self, seed=1):
+        actions, ball_infos = self.get_multiple_actions(1, max_actions=1, seed=seed)
+        return actions[0], ball_infos[0]
 
-    def get_multiple_actions(self, num=10, valid=True):
+
+    def get_same_actions(self, num, seed=1):
+        print("num input: " + str(num))
+        actions, ball_infos = self.get_multiple_actions(1, max_actions=1, seed=seed)
+        action = actions[0]
+        ball_info = ball_infos[0]
+        return  [action for i in range(num)],  \
+                [ball_info for i in range(num)]
+
+    '''
+    NOTICE: PHYRE API does not guarantee actions are always valid!
+    '''
+    def get_multiple_actions(self, num, max_actions=100, seed=1):
+        action_pool = self.simulator.build_discrete_action_space(max_actions=max_actions, seed=seed)
+
         actions = []
+        ball_infos = []
         for i in range(num):
-            ball_info = self.get_single_action(valid=valid)
-            actions.append(ball_info)
-        return actions
-    
+            action = random.choice(action_pool)
+            ball_info = self.action_to_ball_info(action)
+            actions.append(action)
+            ball_infos.append(ball_info)
+
+        return actions, ball_infos
+
+
     '''
     returns (x, y, radius) (percentage of SCENE_WIDTH)
     only for one ball tier
@@ -69,18 +89,9 @@ class Generator:
 
         radius = self._scale(action[2], MIN_RADIUS, MAX_RADIUS)
 
-        print("radius: ")
-        print(radius)
-        '''
-        print("action")
-        print(ball.position.x) # action * 256 = ball.position.x
-        print(ball.position.y) # action * 256 = ball.position.y
-        print(ball.radius) # don't know how to get radius from action
-        '''
         return (action[0], action[1], radius / 256)
         # return (ball.position.x / PHYRE_WIDTH, ball.position.y / PHYRE_WIDTH, 4 / PHYRE_WIDTH)
 
+
     def _scale(self, x, low, high):
         return x * (high - low) + low
-    # def get_multiple_actions(self, num, seed=1):
-    #     return self.simulator.build_discrete_action_space(num, seed=seed)

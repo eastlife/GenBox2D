@@ -53,7 +53,7 @@ class TaskSimulator (Framework):
     name = "GenBox2D GUI Tool"
     description = "Visualization for PHYRE tasks."
 
-    def __init__(self, config, tasks, properties, action):
+    def __init__(self, config, tasks, properties, actions):
         super(TaskSimulator, self).__init__()
 
         self.tasks = tasks
@@ -72,7 +72,7 @@ class TaskSimulator (Framework):
         self.goal_objects = []
         self.max_goal_contact_steps = 0
         self.curr_goal_contact_steps = 0
-        self.uniform_action = action
+        self.actions = actions
 
         self.world.gravity = (0.0, properties.gravity)
         self.world.contactListener = MyListener(self.bodies, self.contacts)
@@ -145,8 +145,12 @@ class TaskSimulator (Framework):
             if featurized_object.is_goal():
                 self.goal_objects.append(body)   
             
-        if self.uniform_action is not None:
-            self.add_action(self.uniform_action)
+        if (self.actions is not None) and (len(self.actions) != 0):
+            if len(self.actions) != len(self.tasks):
+                print("Number of actions ({0}) does not match number of tasks ({1})".format(len(self.actions), len(self.tasks)))
+                exit(1)
+            action = self.actions[self.task_idx]
+            self.add_action(action)
 
         print("**Task {task_id} loaded**".format(task_id = self.task.task_id))
 
