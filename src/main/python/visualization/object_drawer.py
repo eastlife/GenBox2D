@@ -139,7 +139,7 @@ def draw_rectangle(draw, scene_width, scene_height, shape, color, diameter, x, y
     rectangle_center = (bar_x * scene_width, bar_y * scene_height)
     rectangle_width = 2
     rectangle_length = scene_width * bar_diameter
-    rectangle_angle = bar_angle * 180.0 / math.pi
+    rectangle_angle = 360 * bar_angle
 
     rectangle_vertices = (
         (rectangle_center[0] + offset[0] + rectangle_length / 2, rectangle_center[1] + offset[1] + rectangle_width / 2),
