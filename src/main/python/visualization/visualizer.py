@@ -1,3 +1,5 @@
+import os
+
 from .object_drawer import draw_scene
 from deserializer import deserialize
 from classes.FeaturizedObject import FeaturizedObject
@@ -9,8 +11,13 @@ class Visualizer:
         self.scene_width = 256
         self.scene_height = 256
 
+        self.generate_image = config.image
+        self.generate_gif = config.gif
         path = config.file_path
         task_info, action_info, timestamp_info, solved_info = deserialize(path)
+
+        self.log_time = solved_info["log_time"]
+        print(self.log_time)
         print(task_info)
         print(action_info)
         print(timestamp_info[0])
@@ -43,9 +50,15 @@ class Visualizer:
 
 
     def replay(self):
-        timestamp_info = self.timestamp_info
+        if self.generate_image:
+            image_path = "images-" + self.log_time
+            os.mkdir(image_path)
+
         self.draw_single_picture("initial")
         image_arr = []
+
+        timestamp_info = self.timestamp_info
+
         for timestamp, info in enumerate(timestamp_info):
             featurized_objects = self.featurized_objects
             for idx, body in enumerate(info['body_info']['bodies']):
@@ -53,10 +66,12 @@ class Visualizer:
                 featurized_objects[idx].initial_y = body['pos_y'] / 20.0
                 featurized_objects[idx].initial_angle = body['angle']
             # print(featurized_objects[0].initial_x, featurized_objects[idx].initial_y)
+
             image = self.draw_single_picture(str(timestamp))
             image_arr.append(image)
-
-        image_arr[0].save('images/out.gif', save_all=True, append_images=image_arr)
+        if self.generate_gif:
+            os.mkdir("gif")
+            image_arr[0].save("gif/" + self.log_time + ".gif", save_all=True, append_images=image_arr)
 
 
 
@@ -67,5 +82,9 @@ class Visualizer:
         draw_scene(draw, self.scene_width, self.scene_height, self.featurized_objects)
 
         image = image.transpose(Image.FLIP_TOP_BOTTOM)
-        image.save("images/" + name + ".jpg")
+
+        if self.generate_image:
+            image_path = "images-" + self.log_time
+            
+            image.save(image_path + "/" + name + ".jpg")
         return image

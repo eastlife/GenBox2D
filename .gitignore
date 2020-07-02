@@ -68,3 +68,10 @@ __pycache__/
 *.log
 log-*/
 images/
+*.png
+*.jpg
+*.jpeg
+*.gif
+image-*/
+gif-*/
+gif/

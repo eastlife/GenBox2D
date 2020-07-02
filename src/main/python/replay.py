@@ -9,7 +9,8 @@ from visualization.visualizer import Visualizer
 def get_config_from_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--file_path", help="the path of the log file", type=str)
-    parser.add_argument("-i", help="enable the gui mode to replay", action="store_true", default=False)
+    parser.add_argument("--image", help="generating images", action="store_true", default=False)
+    parser.add_argument("--gif", help="generating gifs", action="store_true", default=False)
 
     config = parser.parse_args()
     return config

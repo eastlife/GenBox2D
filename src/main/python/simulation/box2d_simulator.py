@@ -86,6 +86,12 @@ class TaskSimulator (Framework):
         self.task = None
 
         self.logger = None
+
+        now = datetime.now()
+        now_str = now.strftime("%m-%d-%Y-%H-%M-%S")
+
+        self.log_time = now_str
+
         if not self.interactive:
             # Create logger
             logger = logging.getLogger()
@@ -93,12 +99,9 @@ class TaskSimulator (Framework):
             self.logger = logger
 
             # Create directory for log file
-            now = datetime.now()
-
-            now_dir = now.strftime("%m-%d-%Y-%H-%M-%S")
-            now_dir = "log-" + now_dir
-            os.mkdir(now_dir)
-            self.logging_dir = now_dir
+            now_str = "log-" + now_str
+            os.mkdir(now_str)
+            self.logging_dir = now_str
 
         self.load_task()
 
@@ -317,6 +320,7 @@ class TaskSimulator (Framework):
         json_dict["is_goal_valid"] = (len(self.goal_objects) == 2)
         json_dict["max_goal_contact_steps"] = self.max_goal_contact_steps
         json_dict["is_solved"] = self.is_solved()
+        json_dict["log_time"] = self.log_time
         return json.dumps(json_dict)
 
     def log_bodies(self):
