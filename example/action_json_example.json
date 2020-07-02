@@ -1,0 +1,13 @@
+{
+    "num_action_objects": 1,
+    "featurized_objects": [
+        {
+            "shape": "BALL",
+            "color": "RED",
+            "diameter": 0.1015625,
+            "initial_x": 0.13671875,
+            "initial_y": 0.09765625,
+            "initial_angle": 0.0
+        }
+    ]
+}
