@@ -1,20 +1,6 @@
 import math
 from PIL import Image, ImageDraw
 
-#finds the straight-line distance between two points
-def distance(ax, ay, bx, by):
-    return math.sqrt((by - ay)**2 + (bx - ax)**2)
-
-#rotates point `A` about point `B` by `angle` radians clockwise.
-def rotated_about(ax, ay, bx, by, angle):
-    radius = distance(ax,ay,bx,by)
-    angle += math.atan2(ay-by, ax-bx)
-    return (
-        round(bx + radius * math.cos(angle)),
-        round(by + radius * math.sin(angle))
-    )
-
-
 def draw_scene(draw, scene_width, scene_height, featurized_objects):
     for featurized_object in featurized_objects:
         shape = featurized_object.shape
@@ -49,61 +35,25 @@ def draw_ball(draw, scene_width, scene_height, shape, color, diameter, x, y, ang
 
 def draw_bar(draw, scene_width, scene_height, shape, color, diameter, x, y, angle):
 
-    bar_diameter = diameter
-    bar_angle = angle
-    bar_x = x
-    bar_y = y
-
-    rectangle_center = (bar_x * scene_width, bar_y * scene_height)
-    rectangle_width = 2
-    rectangle_length = scene_width * bar_diameter
-    rectangle_angle =  bar_angle * 180.0 / math.pi
-
-    rectangle_vertices = (
-        (rectangle_center[0] + rectangle_length / 2, rectangle_center[1] + rectangle_width / 2),
-        (rectangle_center[0] + rectangle_length / 2, rectangle_center[1] - rectangle_width / 2),
-        (rectangle_center[0] - rectangle_length / 2, rectangle_center[1] - rectangle_width / 2),
-        (rectangle_center[0] - rectangle_length / 2, rectangle_center[1] + rectangle_width / 2)
-    )
-
-    rectangle_vertices = [rotated_about(x, y, rectangle_center[0], rectangle_center[1], math.radians(rectangle_angle)) for x,y in rectangle_vertices]
-
-    draw.polygon(rectangle_vertices, fill=color)
-
-def draw_jar(draw, scene_width, scene_height, shape, color, diameter, x, y, angle):
-    BASE_RATIO = 0.8
-    WIDTH_RATIO = 1. / 1.2
-    jar_height = 256.0 * _diameter_to_default_scale(diameter)
-    jar_width = jar_height * WIDTH_RATIO
-    jar_base_width = jar_width * BASE_RATIO
-    jar_thickness = _thickness_from_height(256, jar_height)
-    vertices_list, _ = _build_jar_vertices(height=jar_height, width=jar_width, base_width=jar_base_width, thickness=jar_thickness)
-    jar_center = _get_jar_center(scene_width, scene_height, x, y, jar_height, jar_thickness)
-    for rect in vertices_list:
-        draw_polygon(draw, scene_width, scene_height, "jar", "red", 1.0, jar_center[0], jar_center[1], x * scene_width, y * scene_height, angle, rect)
-
-def _diameter_to_default_scale(diameter):
-    BASE_RATIO = 0.8
-    WIDTH_RATIO = 1. / 1.2
-    base_to_width_ratio = (1.0 - BASE_RATIO) / 2.0 + BASE_RATIO
-    width_to_height_ratio = base_to_width_ratio * WIDTH_RATIO
-    height = math.sqrt((diameter**2) / (1 + (width_to_height_ratio**2)))
-    return height
-
-def _thickness_from_height(scene_width, height):
-    thickness = (math.log(height) / math.log(0.3 * scene_width) * scene_width / 50) / 2
-    if thickness < 2.0:
-        return 2.0
-    return thickness
-
-def _get_jar_center(scene_width, scene_height, x, y, jar_height, jar_thickness):
-    return (x * scene_width, y * scene_height )# - jar_height / 2 + jar_thickness * 2)
-
-def draw_polygon(draw, scene_width, scene_height, shape, color, diameter, pos_x, pos_y, rotate_x, rotate_y, angle, vertices):
-
-    # rectangle_center = (x * scene_width, y * scene_height)
+    rectangle_center = (x * scene_width, y * scene_height)
     rectangle_width = 2
     rectangle_length = scene_width * diameter
+
+    rectangle_vertices = (
+        (rectangle_length / 2, rectangle_width / 2),
+        (rectangle_length / 2, - rectangle_width / 2),
+        (- rectangle_length / 2, - rectangle_width / 2),
+        (- rectangle_length / 2, rectangle_width / 2)
+    )
+
+    draw_polygon(draw, scene_width, scene_height, color, 
+                rectangle_center[0], rectangle_center[1], 
+                rectangle_center[0], rectangle_center[1], 
+                angle, rectangle_vertices)
+
+
+
+def draw_polygon(draw, scene_width, scene_height, color, pos_x, pos_y, rotate_x, rotate_y, angle, vertices):
     rectangle_angle = 180.0 / math.pi * angle
 
     rectangle_vertices = (
@@ -120,6 +70,51 @@ def draw_polygon(draw, scene_width, scene_height, shape, color, diameter, pos_x,
 
     rectangle_vertices = [rotated_about(x, y, rotate_center[0], rotate_center[1], math.radians(rectangle_angle)) for x,y in rectangle_vertices]
     draw.polygon(rectangle_vertices, fill=color)
+    
+def draw_jar(draw, scene_width, scene_height, shape, color, diameter, x, y, angle):
+    BASE_RATIO = 0.8
+    WIDTH_RATIO = 1. / 1.2
+    jar_height = 256.0 * _diameter_to_default_scale(diameter)
+    jar_width = jar_height * WIDTH_RATIO
+    jar_base_width = jar_width * BASE_RATIO
+    jar_thickness = _thickness_from_height(256, jar_height)
+    vertices_list, _ = _build_jar_vertices(height=jar_height, width=jar_width, base_width=jar_base_width, thickness=jar_thickness)
+    jar_center = _get_jar_center(scene_width, scene_height, x, y, jar_height, jar_thickness)
+    for rect in vertices_list:
+        draw_polygon(draw, scene_width, scene_height, color, jar_center[0], jar_center[1], x * scene_width, y * scene_height, angle, rect)
+
+
+#finds the straight-line distance between two points
+def distance(ax, ay, bx, by):
+    return math.sqrt((by - ay)**2 + (bx - ax)**2)
+
+#rotates point `A` about point `B` by `angle` radians clockwise.
+def rotated_about(ax, ay, bx, by, angle):
+    radius = distance(ax,ay,bx,by)
+    angle += math.atan2(ay-by, ax-bx)
+    return (
+        round(bx + radius * math.cos(angle)),
+        round(by + radius * math.sin(angle))
+    )
+
+    
+def _diameter_to_default_scale(diameter):
+    BASE_RATIO = 0.8
+    WIDTH_RATIO = 1. / 1.2
+    base_to_width_ratio = (1.0 - BASE_RATIO) / 2.0 + BASE_RATIO
+    width_to_height_ratio = base_to_width_ratio * WIDTH_RATIO
+    height = math.sqrt((diameter**2) / (1 + (width_to_height_ratio**2)))
+    return height
+
+def _thickness_from_height(scene_width, height):
+    thickness = (math.log(height) / math.log(0.3 * scene_width) * scene_width / 50) / 2
+    if thickness < 2.0:
+        return 2.0
+    return thickness
+
+def _get_jar_center(scene_width, scene_height, x, y, jar_height, jar_thickness):
+    return (x * scene_width, y * scene_height)
+
 
 def _build_jar_vertices(height, width, thickness, base_width):
         # Create box.
@@ -167,42 +162,3 @@ def height_percent_to_y(scene_height, height_percent):
 
 def diameter_percent_to_length(scene_width, diameter_percent):
     return diameter_percent * scene_width
-
-scene_width = 256
-scene_height = 256
-
-image = Image.new("RGB", (scene_width, scene_height), "white")
-draw = ImageDraw.Draw(image)
-
-draw_jar(draw, scene_width, scene_height, "jar", "red", 0.5, 0.5, 0.5, 0.25)
-draw_jar(draw, scene_width, scene_height, "jar", "red", 0.5, 0.5, 0.5, 0)
-
-
-image = image.transpose(Image.FLIP_TOP_BOTTOM)
-image.show()
-# draw_scene(scene_width, scene_height)
-
-
-
-def draw_rectangle(draw, scene_width, scene_height, shape, color, diameter, x, y, angle, offset):
-
-    bar_diameter = diameter
-    bar_angle = angle
-    bar_x = x
-    bar_y = y
-
-    rectangle_center = (bar_x * scene_width, bar_y * scene_height)
-    rectangle_width = 2
-    rectangle_length = scene_width * bar_diameter
-    rectangle_angle = 360 * bar_angle
-
-    rectangle_vertices = (
-        (rectangle_center[0] + offset[0] + rectangle_length / 2, rectangle_center[1] + offset[1] + rectangle_width / 2),
-        (rectangle_center[0] + offset[0] + rectangle_length / 2, rectangle_center[1] + offset[1] - rectangle_width / 2),
-        (rectangle_center[0] + offset[0] - rectangle_length / 2, rectangle_center[1] + offset[1] - rectangle_width / 2),
-        (rectangle_center[0] + offset[0] - rectangle_length / 2, rectangle_center[1] + offset[1] + rectangle_width / 2)
-    )
-
-    rectangle_vertices = [rotated_about(x, y, rectangle_center[0], rectangle_center[1], math.radians(rectangle_angle)) for x,y in rectangle_vertices]
-
-    draw.polygon(rectangle_vertices, fill=color)
