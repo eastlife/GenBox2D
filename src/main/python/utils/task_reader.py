@@ -7,7 +7,7 @@ import lzma
 def load_compiled_task_dict():
     """Helper function to load the default task dump."""
     my_path = os.path.abspath(os.path.dirname(__file__))
-    path = os.path.join(my_path, "../../../data/tasks.bin.lzma")
+    path = os.path.join(my_path, "../../../../data/tasks.bin.lzma")
     phyre_task = []
     task_map_all = {}
     with lzma.open(path) as stream:

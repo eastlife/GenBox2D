@@ -1,7 +1,7 @@
 import phyre
 import random
 from .Task import Task
-from read_tasks import load_compiled_task_dict
+from utils.task_reader import load_compiled_task_dict
 from phyre import action_mappers
 
 random.seed(0)
