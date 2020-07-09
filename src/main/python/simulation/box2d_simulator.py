@@ -32,14 +32,14 @@ class MyListener (b2ContactListener):
     def PostSolve(self, contact, impulse):
         # print(contact)
         # print(impulse)
-        contact_info = self.log_contact(self.bodies, contact, impulse)
+        contact_info = self.log_contact(contact, impulse)
         self.contacts.append(contact_info)
     
 
-    def log_contact(self, bodies, contact, impulse):
+    def log_contact(self, contact, impulse):
         json_contact = {}
-        json_contact["body_a"] = find_body(bodies, contact.fixtureA.body)
-        json_contact["body_b"] = find_body(bodies, contact.fixtureB.body)
+        json_contact["body_a"] = self._find_body(contact.fixtureA.body)
+        json_contact["body_b"] = self._find_body(contact.fixtureB.body)
         json_contact["manifold_normal"] = (contact.worldManifold.normal[0], contact.worldManifold.normal[1])
 
         json_contact["points"] = contact.worldManifold.points
@@ -47,6 +47,13 @@ class MyListener (b2ContactListener):
         json_contact["normal_impulse"] = impulse.normalImpulses
         json_contact["tangent_impulse"] = impulse.tangentImpulses
         return json_contact
+
+    def _find_body(self, body):
+        if body in self.bodies:
+            return self.bodies.index(body)
+        else:
+            return -1
+
 
 
 class TaskSimulator (Framework):
@@ -77,8 +84,8 @@ class TaskSimulator (Framework):
         self.world.gravity = (0.0, properties.gravity)
         self.world.contactListener = MyListener(self.bodies, self.contacts)
 
-        self.SCENE_WIDTH = 20.0
-        self.SCENE_HEIGHT = 20.0
+        self.SCENE_WIDTH = properties.SCENE_WIDTH
+        self.SCENE_HEIGHT = properties.SCENE_HEIGHT
 
         self._create_boundaries()
 
@@ -170,9 +177,6 @@ class TaskSimulator (Framework):
         featurized_object = FeaturizedObject(shape, color, diameter, x, y, angle)
         self.action_bodies.append(featurized_object)
 
-    def init_action(self, action):
-        self.uniform_action = action
-
     def next_task(self):
         if self.task_idx < len(self.tasks):
             self.task_idx += 1
@@ -185,16 +189,6 @@ class TaskSimulator (Framework):
 
     def replay_task(self):
         return self.load_task()
-
-
-    def width_percent_to_x(self, width_percent):
-        return - self.SCENE_WIDTH / 2 + width_percent * self.SCENE_WIDTH
-
-    def height_percent_to_y(self, height_percent):
-        return height_percent * self.SCENE_HEIGHT
-
-    def diameter_percent_to_length(self, diameter_percent):
-        return diameter_percent * self.SCENE_WIDTH 
 
 
     def run_sim(self):
@@ -287,6 +281,7 @@ class TaskSimulator (Framework):
             self.cleanUp()
             isSuccess = self.replay_task()
 
+    # loggers
     def serialize_timestamp(self, timestamp):
         json_dict = {}
         json_dict["timestamp"] = timestamp
@@ -353,8 +348,3 @@ class TaskSimulator (Framework):
         json_dict["contacts"] = json_contacts
         return json_dict
 
-def find_body(bodies, body):
-    if body in bodies:
-        return bodies.index(body)
-    else:
-        return -1

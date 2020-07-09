@@ -2,6 +2,9 @@ from Box2D import (b2FixtureDef, b2PolygonShape, b2CircleShape, b2EdgeShape, b2V
                    b2Transform, b2Mul, b2BodyDef,
                    b2_pi, b2ContactListener)
 
+from utils.phyre_creator import Constant
+from utils.transforms import Transform
+
 import math
 
 def create_body(world, properties, scene_width, scene_height, shape, color, diameter, x, y, angle):
@@ -44,8 +47,11 @@ def create_body(world, properties, scene_width, scene_height, shape, color, diam
     return body
 
 def create_ball(world, properties, scene_width, scene_height, shape, color, diameter, x, y, angle, isDynamic):
-    center = (width_percent_to_x(scene_width, x), height_percent_to_y(scene_height, y))
-    radius = diameter_percent_to_length(scene_width, diameter) / 2
+    center = (
+        Transform.width_percent_to_x(scene_width, x), 
+        Transform.height_percent_to_y(scene_height, y)
+        )
+    radius = Transform.diameter_percent_to_length(scene_width, diameter) / 2
     if isDynamic:
         fixture = b2FixtureDef(shape=b2CircleShape(radius=radius),
                                 density=properties.densities["ball"], friction=properties.frictions["ball"], restitution=properties.restitutions["ball"])
@@ -56,11 +62,15 @@ def create_ball(world, properties, scene_width, scene_height, shape, color, diam
 
 def create_bar(world, properties, scene_width, scene_height, shape, color, diameter, x, y, angle, isDynamic):
     # constant from PHYRE
-    BAR_HEIGHT = scene_width / 50.0
+    BAR_HEIGHT = scene_width * Constant.BAR_HEIGHT_RATIO
 
-    center = (width_percent_to_x(scene_width, x), height_percent_to_y(scene_height, y))
+    center = (
+        Transform.width_percent_to_x(scene_width, x), 
+        Transform.height_percent_to_y(scene_height, y)
+        )
 
-    bar_shape = b2PolygonShape(box=(diameter_percent_to_length(scene_width, diameter) / 2, BAR_HEIGHT / 2))
+    bar_shape = b2PolygonShape(
+        box=(Transform.diameter_percent_to_length(scene_width, diameter) / 2, BAR_HEIGHT / 2))
     bar_fixture = b2FixtureDef(shape=bar_shape,
                     density=properties.densities["bar"], friction=properties.frictions["bar"], restitution=properties.restitutions["bar"])
 
@@ -73,14 +83,14 @@ def create_bar(world, properties, scene_width, scene_height, shape, color, diame
 
 def create_jar(world, properties, scene_width, scene_height, shape, color, diameter, x, y, angle, isDynamic):
     # constants from PHYRE
-    BASE_RATIO = 0.8
-    WIDTH_RATIO = 1. / 1.2
+    BASE_RATIO = Constant.JAR_BASE_RATIO
+    WIDTH_RATIO = Constant.JAR_WIDTH_RATIO
 
-    jar_height = 20.0 * _diameter_to_default_scale(diameter)
+    jar_height = scene_width * Constant._jar_diameter_to_default_scale(diameter)
     jar_width = jar_height * WIDTH_RATIO
     jar_base_width = jar_width * BASE_RATIO
-    jar_thickness = _thickness_from_height(scene_width, jar_height)
-    vertices_list, _ = _build_jar_vertices(height=jar_height, width=jar_width, base_width=jar_base_width, thickness=jar_thickness)
+    jar_thickness = Constant._jar_thickness_from_height(scene_width, jar_height)
+    vertices_list, _ = Constant._build_jar_vertices(height=jar_height, width=jar_width, base_width=jar_base_width, thickness=jar_thickness)
 
     jar_center = _get_jar_center(scene_width, scene_height, x, y, angle, jar_height, jar_thickness)
 
@@ -109,8 +119,7 @@ def create_jar(world, properties, scene_width, scene_height, shape, color, diame
         body = world.CreateDynamicBody(position=jar_center, fixtures=[literal1_fixture, literal2_fixture, bottom_fixture], angle= 2 * b2_pi * angle)
     else:
         body = world.CreateStaticBody(position=jar_center, fixtures=[literal1_fixture, literal2_fixture, bottom_fixture], angle= 2 * b2_pi * angle)
-    print("position")
-    print(body.position)
+
     return body
 
 
@@ -120,76 +129,10 @@ def _set_vertices(shape, vertices):
     shape.vertices = vertices
 
 def _get_jar_center(scene_width, scene_height, x, y, angle, jar_height, jar_thickness):
-    return (width_percent_to_x(scene_width, x), 
-            height_percent_to_y(scene_height, y) - jar_height * 0.33 * math.cos(2 * math.pi * angle)) # 0.33 is an estimate for the mass center in phyre
-
-'''
-Jar builder function by PHYRE
-'''
-def _diameter_to_default_scale(diameter):
-    BASE_RATIO = 0.8
-    WIDTH_RATIO = 1. / 1.2
-    base_to_width_ratio = (1.0 - BASE_RATIO) / 2.0 + BASE_RATIO
-    width_to_height_ratio = base_to_width_ratio * WIDTH_RATIO
-    height = math.sqrt((diameter**2) / (1 + (width_to_height_ratio**2)))
-    return height
-
-'''
-Jar builder function by PHYRE
-'''
-def _thickness_from_height(scene_width, height):
-    return (math.log(height) / math.log(0.3 * scene_width) * scene_width / 50)
-
-'''
-Jar builder function by PHYRE
-'''
-def _build_jar_vertices(height, width, thickness, base_width):
-        # Create box.
-        vertices = []
-        for i in range(4):
-            vx = (1 - 2 * (i in (1, 2))) / 2. * base_width
-            vy = (1 - 2 * (i in (2, 3))) / 2. * thickness
-            vertices.append((vx, vy))
-
-        # Compute offsets for jar edge coordinates.
-        base = (width - base_width) / 2.
-        hypotenuse = math.sqrt(height**2 + base**2)
-        cos, sin = base / hypotenuse, height / hypotenuse
-        x_delta = thickness * sin
-        x_delta_top = thickness / sin
-        y_delta = thickness * cos
-
-        # Left tilted edge of jar.
-        vertices_left = [
-            (-width / 2, height - (thickness / 2)),
-            ((-base_width / 2), -(thickness / 2)),
-            ((-base_width / 2) + x_delta, y_delta - (thickness / 2)),
-            ((-width / 2) + x_delta_top, height - (thickness / 2)),
-        ]
-
-        # Right tilted edge.
-        vertices_right = [
-            (width / 2, height - (thickness / 2)),
-            ((width / 2) - x_delta_top, height - (thickness / 2)),
-            ((base_width / 2) - x_delta, y_delta - (thickness / 2)),
-            ((base_width / 2), -(thickness / 2)),
-        ]
-
-        phantom_vertices = (vertices_left[0], vertices_left[1],
-                            vertices_right[3], vertices_right[0])
-   
-        return [vertices, vertices_left, vertices_right], phantom_vertices
-
+    return (
+        Transform.width_percent_to_x(scene_width, x), 
+        Transform.height_percent_to_y(scene_height, y) - jar_height * 0.33 * math.cos(2 * math.pi * angle)) # 0.33 is an estimate for the mass center in phyre
 
 
 def create_standing_sticks(world, properties, scene_width, scene_height, shape, color, diameter, x, y, angle, isDynamic):
     pass
-
-def width_percent_to_x(scene_width, width_percent):
-    return - scene_width / 2 + width_percent * scene_width
-
-def height_percent_to_y(scene_height, height_percent):
-    return height_percent * scene_height
-
-def diameter_percent_to_length(scene_width, diameter_percent):
-    return diameter_percent * scene_width

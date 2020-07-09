@@ -5,29 +5,26 @@ from deserializer import deserialize
 from classes.FeaturizedObject import FeaturizedObject
 from PIL import Image, ImageDraw
 
+from utils.phyre_creator import Constant
+
 class Visualizer:
 
     def __init__(self, config):
-        self.scene_width = 256
-        self.scene_height = 256
+        self.scene_width = Constant.PHYRE_SCENE_WIDTH
+        self.scene_height = Constant.PHYRE_SCENE_HEIGHT
         
         self.is_dir = config.dir
         self.generate_image = config.image
         self.generate_gif = config.gif
         self.path = config.log_path
 
+
     def deserialize_log(self, path):
-        print("log file path: " + path)
         task_info, action_info, timestamp_info, solved_info = deserialize(path)
 
         self.log_time = solved_info["log_time"]
         self.task_id = task_info["task_id"]
-        print(self.log_time)
-        # print(task_info)
-        # print(action_info)
-        # print(timestamp_info[0])
-        # print(timestamp_info[-1])
-        # print(solved_info)
+
         self.task_info = task_info
         self.action_info = action_info
         self.timestamp_info = timestamp_info
@@ -36,13 +33,13 @@ class Visualizer:
         self.featurized_objects.extend(self.get_objects_from_json(action_info))
 
 
-
     def get_objects_from_json(self, task_info):
         featurized_objects = []
         for featurized_object_json in task_info['featurized_objects']:
             featurized_object = self.get_object_from_json(featurized_object_json)
             featurized_objects.append(featurized_object)
         return featurized_objects
+
 
     def get_object_from_json(self, featurized_object_json):
         shape = featurized_object_json['shape']
@@ -58,23 +55,17 @@ class Visualizer:
         logs = os.listdir(self.path)
         for log_file in logs:
             print("log file: " + log_file)
-        for log_file in logs:
-            print("log file: " + log_file)
             
             self.deserialize_log(self.path + "/" + log_file)
             self.replay()
             
+
     def replay_file(self):
         self.deserialize_log(self.path)
         self.replay()
 
-    def replay(self):
-        # self.deserialize_log(self.path)
 
-        # if self.generate_image:
-        #     image_path = "images/images-" + self.log_time + "-" + self.task_id
-        #     if not os.path.exists(image_path):
-        #         os.makedirs(image_path)
+    def replay(self):
 
         self.draw_single_picture("initial")
         image_arr = []
@@ -87,7 +78,6 @@ class Visualizer:
                 featurized_objects[idx].initial_x = (body['pos_x'] + 10) / 20.0
                 featurized_objects[idx].initial_y = body['pos_y'] / 20.0
                 featurized_objects[idx].initial_angle = body['angle']
-            # print(featurized_objects[0].initial_x, featurized_objects[idx].initial_y)
 
             image = self.draw_single_picture(str(timestamp))
             image_arr.append(image)
@@ -96,7 +86,6 @@ class Visualizer:
                 os.mkdir("gif")
 
             image_arr[0].save("gif/" + self.log_time + "-" + self.task_id + ".gif", save_all=True, append_images=image_arr)
-
 
 
     def draw_single_picture(self, name):

@@ -7,6 +7,10 @@ class WorldProperties:
     def __init__(self, path):
         with open(path) as f:
             config_dict = json.load(f)
+
+            self.SCENE_WIDTH = 20.0
+            self.SCENE_HEIGHT = 20.0
+
             self.gravity = -10.0
             self.shapes = ["ball", "bar", "jar", "standing_stick"]
             
