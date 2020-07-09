@@ -71,22 +71,26 @@ def draw_bar(draw, scene_width, scene_height, shape, color, diameter, x, y, angl
     draw.polygon(rectangle_vertices, fill=color)
 
 def draw_jar(draw, scene_width, scene_height, shape, color, diameter, x, y, angle):
+    BASE_RATIO = 0.8
+    WIDTH_RATIO = 1. / 1.2
     jar_height = 220 * diameter
-    jar_width = 160 * diameter
-    jar_base_width = 140 * diameter
+    jar_width = jar_height * WIDTH_RATIO
+    jar_base_width = jar_width * BASE_RATIO
     jar_thickness = 4
     vertices_list, _ = _build_jar_vertices(height=jar_height, width=jar_width, base_width=jar_base_width, thickness=jar_thickness)
-    jar_center = (x * scene_width, y * scene_height - jar_height / 2 + jar_thickness * 2)
+    jar_center = _get_jar_center(scene_width, scene_height, x, y, jar_height, jar_thickness)
     for rect in vertices_list:
         draw_polygon(draw, scene_width, scene_height, "jar", "red", 1.0, jar_center[0], jar_center[1], x * scene_width, y * scene_height, angle, rect)
 
+def _get_jar_center(scene_width, scene_height, x, y, jar_height, jar_thickness):
+    return (x * scene_width, y * scene_height)# - jar_height / 2 + jar_thickness * 2)
 
 def draw_polygon(draw, scene_width, scene_height, shape, color, diameter, pos_x, pos_y, rotate_x, rotate_y, angle, vertices):
 
     # rectangle_center = (x * scene_width, y * scene_height)
     rectangle_width = 2
     rectangle_length = scene_width * diameter
-    rectangle_angle = 360 * angle
+    rectangle_angle = 180.0 / math.pi * angle
 
     rectangle_vertices = (
         (vertices[0][0] + pos_x, vertices[0][1] + pos_y),

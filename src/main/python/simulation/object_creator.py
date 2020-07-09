@@ -76,7 +76,7 @@ def create_bar(world, properties, scene_width, scene_height, shape, color, diame
         body = world.CreateStaticBody(position=center, fixtures=bar_fixture, angle= 2 * b2_pi * angle)
     return body
 
-def create_jar(world, properties, scene_width, scene_height, shape, color, diameter, x, y, angle, isDynamic):
+def create_jar_old(world, properties, scene_width, scene_height, shape, color, diameter, x, y, angle, isDynamic):
     # constants
     scaled_diameter = diameter_percent_to_length(scene_width, diameter)
     scaled_literal_offset = 0.02 * scaled_diameter
@@ -132,6 +132,113 @@ def create_jar(world, properties, scene_width, scene_height, shape, color, diame
         body = world.CreateStaticBody(position=center, fixtures=[literal1_fixture, literal2_fixture, bottom_fixture], angle= 2 * b2_pi * angle)
 
     return body
+
+def set_vertices(shape, vertices):
+    shape.vertexCount = len(vertices)
+    vertices.sort()
+    shape.vertices = vertices
+    # for idx, vertice in enumerate(vertices):
+    #     print(idx)
+        
+    #     shape.vertices.append((vertice[0], vertice[1]))
+    #     print((vertice[0], vertice[1]))
+    #     # shape.vertices[idx] = 
+    print(shape.vertices)
+
+
+def create_jar(world, properties, scene_width, scene_height, shape, color, diameter, x, y, angle, isDynamic):
+    BASE_RATIO = 0.8
+    WIDTH_RATIO = 1. / 1.2
+    jar_height = 220.0 / 256 * 20 * diameter
+    jar_width = jar_height * WIDTH_RATIO
+    jar_base_width = jar_width * BASE_RATIO
+    jar_thickness = 16.0 / 256
+    vertices_list, _ = _build_jar_vertices(height=jar_height, width=jar_width, base_width=jar_base_width, thickness=jar_thickness)
+
+    jar_center = _get_jar_center(scene_width, scene_height, x, y, jar_height, jar_thickness)
+    print("center")
+    print(jar_center)
+    literal1_shape = b2PolygonShape()
+    literal2_shape = b2PolygonShape()
+    bottom_shape = b2PolygonShape()
+
+    set_vertices(literal1_shape, vertices_list[0])
+    set_vertices(literal2_shape, vertices_list[1])
+    set_vertices(bottom_shape, vertices_list[2])
+
+
+    literal1_fixture = b2FixtureDef(shape=literal1_shape,
+                        density=properties.densities["jar"], 
+                        friction=properties.frictions["jar"], 
+                        restitution=properties.restitutions["jar"])
+    literal2_fixture = b2FixtureDef(shape=literal2_shape,
+                        density=properties.densities["jar"], 
+                        friction=properties.frictions["jar"], 
+                        restitution=properties.restitutions["jar"])
+    bottom_fixture = b2FixtureDef(shape=bottom_shape,
+                        density=properties.densities["jar"], 
+                        friction=properties.frictions["jar"], 
+                        restitution=properties.restitutions["jar"])
+
+    if isDynamic:
+        body = world.CreateDynamicBody(position=jar_center, fixtures=[literal1_fixture, literal2_fixture, bottom_fixture], angle= 2 * b2_pi * angle)
+    else:
+        body = world.CreateStaticBody(position=jar_center, fixtures=[literal1_fixture, literal2_fixture, bottom_fixture], angle= 2 * b2_pi * angle)
+    print("position")
+    print(body.position)
+    return body
+
+# def draw_jar(draw, scene_width, scene_height, shape, color, diameter, x, y, angle):
+#     jar_height = 220 * diameter
+#     jar_width = 160 * diameter
+#     jar_base_width = 140 * diameter
+#     jar_thickness = 4
+#     vertices_list, _ = _build_jar_vertices(height=jar_height, width=jar_width, base_width=jar_base_width, thickness=jar_thickness)
+#     jar_center = _get_jar_center(scene_width, scene_height, x, y, jar_height, jar_thickness)
+#     for rect in vertices_list:
+#         draw_polygon(draw, scene_width, scene_height, "jar", "red", 1.0, jar_center[0], jar_center[1], x * scene_width, y * scene_height, angle, rect)
+
+def _build_jar_vertices(height, width, thickness, base_width):
+        # Create box.
+        vertices = []
+        for i in range(4):
+            vx = (1 - 2 * (i in (1, 2))) / 2. * base_width
+            vy = (1 - 2 * (i in (2, 3))) / 2. * thickness
+            vertices.append((vx, vy))
+
+        # Compute offsets for jar edge coordinates.
+        base = (width - base_width) / 2.
+        hypotenuse = math.sqrt(height**2 + base**2)
+        cos, sin = base / hypotenuse, height / hypotenuse
+        x_delta = thickness * sin
+        x_delta_top = thickness / sin
+        y_delta = thickness * cos
+
+        # Left tilted edge of jar.
+        vertices_left = [
+            (-width / 2, height - (thickness / 2)),
+            ((-base_width / 2), -(thickness / 2)),
+            ((-base_width / 2) + x_delta, y_delta - (thickness / 2)),
+            ((-width / 2) + x_delta_top, height - (thickness / 2)),
+        ]
+
+        # Right tilted edge.
+        vertices_right = [
+            (width / 2, height - (thickness / 2)),
+            ((width / 2) - x_delta_top, height - (thickness / 2)),
+            ((base_width / 2) - x_delta, y_delta - (thickness / 2)),
+            ((base_width / 2), -(thickness / 2)),
+        ]
+
+        phantom_vertices = (vertices_left[0], vertices_left[1],
+                            vertices_right[3], vertices_right[0])
+   
+        return [vertices, vertices_left, vertices_right], phantom_vertices
+
+
+def _get_jar_center(scene_width, scene_height, x, y, jar_height, jar_thickness):
+    return (width_percent_to_x(scene_width, x), height_percent_to_y(scene_height, y))
+
 
 def create_standing_sticks(world, properties, scene_width, scene_height, shape, color, diameter, x, y, angle, isDynamic):
     pass
