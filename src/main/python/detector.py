@@ -63,7 +63,7 @@ def main():
 
     print(sys.argv)
     sys.argv = sys.argv[:1]
-    from simulation.contact_detector import ContactDetector
+    from contact_detection.contact_detector import ContactDetector
 
     simulator = ContactDetector(config, tasks, properties)
 

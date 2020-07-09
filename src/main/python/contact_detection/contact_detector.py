@@ -10,7 +10,7 @@ from Box2D import (b2FixtureDef, b2PolygonShape, b2CircleShape, b2EdgeShape,
                    b2_pi, b2ContactListener, b2Contact, b2ContactImpulse)
 
 
-from .object_creator import create_body
+from simulation.object_creator import create_body
 
 
 class MyListener (b2ContactListener):
@@ -29,16 +29,16 @@ class MyListener (b2ContactListener):
         pass
 
     def PostSolve(self, contact, impulse):
-        print(contact)
-        print(impulse)
+        # print(contact)
+        # print(impulse)
         contact_info = self.log_contact(self.bodies, contact, impulse)
         self.contacts.append(contact_info)
     
 
     def log_contact(self, bodies, contact, impulse):
         json_contact = {}
-        json_contact["body_a"] = find_body(bodies, contact.fixtureA.body)
-        json_contact["body_b"] = find_body(bodies, contact.fixtureB.body)
+        json_contact["body_a"] = self.find_body(contact.fixtureA.body)
+        json_contact["body_b"] = self.find_body(contact.fixtureB.body)
         json_contact["manifold_normal"] = (contact.worldManifold.normal[0], contact.worldManifold.normal[1])
 
         json_contact["points"] = contact.worldManifold.points
@@ -46,6 +46,13 @@ class MyListener (b2ContactListener):
         json_contact["normal_impulse"] = impulse.normalImpulses
         json_contact["tangent_impulse"] = impulse.tangentImpulses
         return json_contact
+
+
+    def find_body(self, body):
+        if body in self.bodies:
+            return self.bodies.index(body)
+        else:
+            return -1
 
 
 class ContactDetector (Framework):
@@ -145,16 +152,6 @@ class ContactDetector (Framework):
         return self.load_task()
 
 
-    def width_percent_to_x(self, width_percent):
-        return - self.SCENE_WIDTH / 2 + width_percent * self.SCENE_WIDTH
-
-    def height_percent_to_y(self, height_percent):
-        return height_percent * self.SCENE_HEIGHT
-
-    def diameter_percent_to_length(self, diameter_percent):
-        return diameter_percent * self.SCENE_WIDTH 
-
-
     def run_sim(self):
         if self.task is None:
             raise Exception
@@ -165,7 +162,7 @@ class ContactDetector (Framework):
             self.logger.addHandler(task_handler)
 
             # log initial positions
-            self.logger.info(self.task.serialize_customized_task())
+            self.logger.info(self.task.serialize_task())
         
         timeStep = 1.0 / self.frequency
         vel_iters, pos_iters = 6, 2
@@ -247,9 +244,4 @@ class ContactDetector (Framework):
         json_dict["contacts"] = json_contacts
         return json_dict
 
-def find_body(bodies, body):
-    if body in bodies:
-        return bodies.index(body)
-    else:
-        return -1
 
