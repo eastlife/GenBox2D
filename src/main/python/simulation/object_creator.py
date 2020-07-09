@@ -57,14 +57,7 @@ def create_ball(world, properties, scene_width, scene_height, shape, color, diam
 def create_bar(world, properties, scene_width, scene_height, shape, color, diameter, x, y, angle, isDynamic):
     scaled_thickness = diameter_percent_to_length(scene_width, 0.005)
 
-    theta = b2_pi * 2 * angle
     center = (width_percent_to_x(scene_width, x), height_percent_to_y(scene_height, y))
-    length = diameter_percent_to_length(scene_width, diameter)
-    v1 = (center[0] - length / 2 * math.cos(theta), center[1] - length / 2 * math.sin(theta))
-    v2 = (center[0] + length / 2 * math.cos(theta), center[1] + length / 2 * math.sin(theta))
-    edge = b2EdgeShape()
-    edge.vertices = [v1, v2]
-    edge.position = center
 
     bar_shape = b2PolygonShape(box=(diameter_percent_to_length(scene_width, diameter) / 2, scaled_thickness))
     bar_fixture = b2FixtureDef(shape=bar_shape,
@@ -74,63 +67,6 @@ def create_bar(world, properties, scene_width, scene_height, shape, color, diame
         body = world.CreateDynamicBody(position=center, fixtures=bar_fixture, angle= 2 * b2_pi * angle)
     else:
         body = world.CreateStaticBody(position=center, fixtures=bar_fixture, angle= 2 * b2_pi * angle)
-    return body
-
-def create_jar_old(world, properties, scene_width, scene_height, shape, color, diameter, x, y, angle, isDynamic):
-    # constants
-    scaled_diameter = diameter_percent_to_length(scene_width, diameter)
-    scaled_literal_offset = 0.02 * scaled_diameter
-    scaled_thickness = diameter_percent_to_length(scene_width, 0.005)
-
-    literal_length_adjust = 0.75 * scaled_diameter
-    literal_angle = 0.05
-    literal_x_adjust = 3 * literal_length_adjust * literal_angle
-
-    bottom_length_adjust = 0.6 * scaled_diameter
-    bottom_y_adjust = 0.15 * scaled_diameter
-
-    center_y_adjust = 1.5 * scaled_thickness
-    center = (width_percent_to_x(scene_width, x), height_percent_to_y(scene_height, y) - center_y_adjust)
-
-    literal1_shape = b2PolygonShape()
-    literal1_shape.SetAsBox(literal_length_adjust / 2, # hx
-                            scaled_thickness, # hy
-                            b2Vec2(diameter_percent_to_length(scene_width, scaled_literal_offset) - literal_x_adjust, 
-                                    diameter_percent_to_length(scene_width, scaled_literal_offset * 0.5)), # offset 
-                            b2_pi/2 - literal_angle) # angle
-    # literal1_shape.position.set(b2Vec2(0.1, 0.1))
-    literal2_shape = b2PolygonShape()
-    literal2_shape.SetAsBox(literal_length_adjust / 2, 
-                            scaled_thickness, 
-                            b2Vec2(diameter_percent_to_length(scene_width, - scaled_literal_offset) + literal_x_adjust, 
-                                    diameter_percent_to_length(scene_width, scaled_literal_offset * 0.5)), 
-                            b2_pi/2 + literal_angle)
-    # literal1_shape.pos.set(b2Vec2(-0.1, 0.1))
-    bottom_shape = b2PolygonShape()
-    bottom_shape.SetAsBox(bottom_length_adjust / 2, 
-                            scaled_thickness, 
-                            b2Vec2(diameter_percent_to_length(scene_width, 0), 
-                                    diameter_percent_to_length(scene_width, 0) - bottom_y_adjust), 
-                            0)
-
-    literal1_fixture = b2FixtureDef(shape=literal1_shape,
-                        density=properties.densities["jar"], 
-                        friction=properties.frictions["jar"], 
-                        restitution=properties.restitutions["jar"])
-    literal2_fixture = b2FixtureDef(shape=literal2_shape,
-                        density=properties.densities["jar"], 
-                        friction=properties.frictions["jar"], 
-                        restitution=properties.restitutions["jar"])
-    bottom_fixture = b2FixtureDef(shape=bottom_shape,
-                        density=properties.densities["jar"], 
-                        friction=properties.frictions["jar"], 
-                        restitution=properties.restitutions["jar"])
-
-    if isDynamic:
-        body = world.CreateDynamicBody(position=center, fixtures=[literal1_fixture, literal2_fixture, bottom_fixture], angle= 2 * b2_pi * angle)
-    else:
-        body = world.CreateStaticBody(position=center, fixtures=[literal1_fixture, literal2_fixture, bottom_fixture], angle= 2 * b2_pi * angle)
-
     return body
 
 
@@ -150,9 +86,9 @@ def create_jar(world, properties, scene_width, scene_height, shape, color, diame
     literal2_shape = b2PolygonShape()
     bottom_shape = b2PolygonShape()
 
-    set_vertices(literal1_shape, vertices_list[0])
-    set_vertices(literal2_shape, vertices_list[1])
-    set_vertices(bottom_shape, vertices_list[2])
+    _set_vertices(literal1_shape, vertices_list[0])
+    _set_vertices(literal2_shape, vertices_list[1])
+    _set_vertices(bottom_shape, vertices_list[2])
 
     literal1_fixture = b2FixtureDef(shape=literal1_shape,
                         density=properties.densities["jar"], 
@@ -176,11 +112,10 @@ def create_jar(world, properties, scene_width, scene_height, shape, color, diame
     return body
 
 
-def set_vertices(shape, vertices):
+def _set_vertices(shape, vertices):
     shape.vertexCount = len(vertices)
     vertices.sort()
     shape.vertices = vertices
-    print(shape.vertices)
 
 def _get_jar_center(scene_width, scene_height, x, y, angle, jar_height, jar_thickness):
     return (width_percent_to_x(scene_width, x), 
