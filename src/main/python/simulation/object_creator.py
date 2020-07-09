@@ -55,11 +55,12 @@ def create_ball(world, properties, scene_width, scene_height, shape, color, diam
     return body
 
 def create_bar(world, properties, scene_width, scene_height, shape, color, diameter, x, y, angle, isDynamic):
-    scaled_thickness = diameter_percent_to_length(scene_width, 0.005)
+    # constant from PHYRE
+    BAR_HEIGHT = scene_width / 50.0
 
     center = (width_percent_to_x(scene_width, x), height_percent_to_y(scene_height, y))
 
-    bar_shape = b2PolygonShape(box=(diameter_percent_to_length(scene_width, diameter) / 2, scaled_thickness))
+    bar_shape = b2PolygonShape(box=(diameter_percent_to_length(scene_width, diameter) / 2, BAR_HEIGHT / 2))
     bar_fixture = b2FixtureDef(shape=bar_shape,
                     density=properties.densities["bar"], friction=properties.frictions["bar"], restitution=properties.restitutions["bar"])
 
@@ -71,6 +72,7 @@ def create_bar(world, properties, scene_width, scene_height, shape, color, diame
 
 
 def create_jar(world, properties, scene_width, scene_height, shape, color, diameter, x, y, angle, isDynamic):
+    # constants from PHYRE
     BASE_RATIO = 0.8
     WIDTH_RATIO = 1. / 1.2
 

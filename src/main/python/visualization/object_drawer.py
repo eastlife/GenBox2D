@@ -34,26 +34,27 @@ def draw_ball(draw, scene_width, scene_height, shape, color, diameter, x, y, ang
     draw.ellipse(shape, fill=color)
 
 def draw_bar(draw, scene_width, scene_height, shape, color, diameter, x, y, angle):
+    # constant from PHYRE
+    BAR_HEIGHT = scene_width / 50.0
 
     rectangle_center = (x * scene_width, y * scene_height)
-    rectangle_width = 2
+    rectangle_width = BAR_HEIGHT
     rectangle_length = scene_width * diameter
 
     rectangle_vertices = (
         (rectangle_length / 2, rectangle_width / 2),
-        (rectangle_length / 2, - rectangle_width / 2),
-        (- rectangle_length / 2, - rectangle_width / 2),
-        (- rectangle_length / 2, rectangle_width / 2)
+        (rectangle_length / 2, -rectangle_width / 2),
+        (-rectangle_length / 2, -rectangle_width / 2),
+        (-rectangle_length / 2, rectangle_width / 2)
     )
 
-    draw_polygon(draw, scene_width, scene_height, color, 
+    draw_rectangle(draw, scene_width, scene_height, color, 
                 rectangle_center[0], rectangle_center[1], 
                 rectangle_center[0], rectangle_center[1], 
                 angle, rectangle_vertices)
 
 
-
-def draw_polygon(draw, scene_width, scene_height, color, pos_x, pos_y, rotate_x, rotate_y, angle, vertices):
+def draw_rectangle(draw, scene_width, scene_height, color, pos_x, pos_y, rotate_x, rotate_y, angle, vertices):
     rectangle_angle = 180.0 / math.pi * angle
 
     rectangle_vertices = (
@@ -72,33 +73,26 @@ def draw_polygon(draw, scene_width, scene_height, color, pos_x, pos_y, rotate_x,
     draw.polygon(rectangle_vertices, fill=color)
     
 def draw_jar(draw, scene_width, scene_height, shape, color, diameter, x, y, angle):
+    # constants from PHYRE
     BASE_RATIO = 0.8
     WIDTH_RATIO = 1. / 1.2
-    jar_height = 256.0 * _diameter_to_default_scale(diameter)
+
+    jar_height = scene_width * _diameter_to_default_scale(diameter)
     jar_width = jar_height * WIDTH_RATIO
     jar_base_width = jar_width * BASE_RATIO
     jar_thickness = _thickness_from_height(256, jar_height)
     vertices_list, _ = _build_jar_vertices(height=jar_height, width=jar_width, base_width=jar_base_width, thickness=jar_thickness)
-    jar_center = _get_jar_center(scene_width, scene_height, x, y, jar_height, jar_thickness)
+    jar_center = (x * scene_width, y * scene_height)
     for rect in vertices_list:
-        draw_polygon(draw, scene_width, scene_height, color, jar_center[0], jar_center[1], x * scene_width, y * scene_height, angle, rect)
+        draw_rectangle(draw, scene_width, scene_height, color, jar_center[0], jar_center[1], x * scene_width, y * scene_height, angle, rect)
 
 
-#finds the straight-line distance between two points
-def distance(ax, ay, bx, by):
-    return math.sqrt((by - ay)**2 + (bx - ax)**2)
 
-#rotates point `A` about point `B` by `angle` radians clockwise.
-def rotated_about(ax, ay, bx, by, angle):
-    radius = distance(ax,ay,bx,by)
-    angle += math.atan2(ay-by, ax-bx)
-    return (
-        round(bx + radius * math.cos(angle)),
-        round(by + radius * math.sin(angle))
-    )
-
-    
+'''
+Jar builder function by PHYRE
+''' 
 def _diameter_to_default_scale(diameter):
+    # constants from PHYRE
     BASE_RATIO = 0.8
     WIDTH_RATIO = 1. / 1.2
     base_to_width_ratio = (1.0 - BASE_RATIO) / 2.0 + BASE_RATIO
@@ -106,16 +100,20 @@ def _diameter_to_default_scale(diameter):
     height = math.sqrt((diameter**2) / (1 + (width_to_height_ratio**2)))
     return height
 
+
+'''
+Jar builder function by PHYRE
+'''
 def _thickness_from_height(scene_width, height):
-    thickness = (math.log(height) / math.log(0.3 * scene_width) * scene_width / 50) / 2
+    thickness = (math.log(height) / math.log(0.3 * scene_width) * scene_width / 50)
     if thickness < 2.0:
         return 2.0
     return thickness
 
-def _get_jar_center(scene_width, scene_height, x, y, jar_height, jar_thickness):
-    return (x * scene_width, y * scene_height)
 
-
+'''
+Jar builder function by PHYRE
+'''
 def _build_jar_vertices(height, width, thickness, base_width):
         # Create box.
         vertices = []
@@ -152,6 +150,20 @@ def _build_jar_vertices(height, width, thickness, base_width):
                             vertices_right[3], vertices_right[0])
    
         return [vertices, vertices_left, vertices_right], phantom_vertices
+
+
+#finds the straight-line distance between two points
+def distance(ax, ay, bx, by):
+    return math.sqrt((by - ay)**2 + (bx - ax)**2)
+
+#rotates point `A` about point `B` by `angle` radians clockwise.
+def rotated_about(ax, ay, bx, by, angle):
+    radius = distance(ax,ay,bx,by)
+    angle += math.atan2(ay-by, ax-bx)
+    return (
+        round(bx + radius * math.cos(angle)),
+        round(by + radius * math.sin(angle))
+    )
 
 
 def width_percent_to_x(scene_width, width_percent):
