@@ -141,7 +141,7 @@ def create_jar(world, properties, scene_width, scene_height, shape, color, diame
     jar_height = 20.0 * _diameter_to_default_scale(diameter)
     jar_width = jar_height * WIDTH_RATIO
     jar_base_width = jar_width * BASE_RATIO
-    jar_thickness = 16.0 / 256
+    jar_thickness = _thickness_from_height(scene_width, jar_height)
     vertices_list, _ = _build_jar_vertices(height=jar_height, width=jar_width, base_width=jar_base_width, thickness=jar_thickness)
 
     jar_center = _get_jar_center(scene_width, scene_height, x, y, angle, jar_height, jar_thickness)
@@ -196,6 +196,12 @@ def _diameter_to_default_scale(diameter):
     width_to_height_ratio = base_to_width_ratio * WIDTH_RATIO
     height = math.sqrt((diameter**2) / (1 + (width_to_height_ratio**2)))
     return height
+
+'''
+Jar builder function by PHYRE
+'''
+def _thickness_from_height(scene_width, height):
+    return (math.log(height) / math.log(0.3 * scene_width) * scene_width / 50)
 
 '''
 Jar builder function by PHYRE

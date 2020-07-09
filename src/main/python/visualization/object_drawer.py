@@ -73,16 +73,16 @@ def draw_bar(draw, scene_width, scene_height, shape, color, diameter, x, y, angl
 def draw_jar(draw, scene_width, scene_height, shape, color, diameter, x, y, angle):
     BASE_RATIO = 0.8
     WIDTH_RATIO = 1. / 1.2
-    jar_height = 256.0 * diameter_to_default_scale(diameter)
+    jar_height = 256.0 * _diameter_to_default_scale(diameter)
     jar_width = jar_height * WIDTH_RATIO
     jar_base_width = jar_width * BASE_RATIO
-    jar_thickness = 4
+    jar_thickness = _thickness_from_height(256, jar_height)
     vertices_list, _ = _build_jar_vertices(height=jar_height, width=jar_width, base_width=jar_base_width, thickness=jar_thickness)
     jar_center = _get_jar_center(scene_width, scene_height, x, y, jar_height, jar_thickness)
     for rect in vertices_list:
         draw_polygon(draw, scene_width, scene_height, "jar", "red", 1.0, jar_center[0], jar_center[1], x * scene_width, y * scene_height, angle, rect)
 
-def diameter_to_default_scale(diameter):
+def _diameter_to_default_scale(diameter):
     BASE_RATIO = 0.8
     WIDTH_RATIO = 1. / 1.2
     base_to_width_ratio = (1.0 - BASE_RATIO) / 2.0 + BASE_RATIO
@@ -90,6 +90,11 @@ def diameter_to_default_scale(diameter):
     height = math.sqrt((diameter**2) / (1 + (width_to_height_ratio**2)))
     return height
 
+def _thickness_from_height(scene_width, height):
+    thickness = (math.log(height) / math.log(0.3 * scene_width) * scene_width / 50) / 2
+    if thickness < 2.0:
+        return 2.0
+    return thickness
 
 def _get_jar_center(scene_width, scene_height, x, y, jar_height, jar_thickness):
     return (x * scene_width, y * scene_height )# - jar_height / 2 + jar_thickness * 2)
