@@ -133,31 +133,19 @@ def create_jar_old(world, properties, scene_width, scene_height, shape, color, d
 
     return body
 
-def set_vertices(shape, vertices):
-    shape.vertexCount = len(vertices)
-    vertices.sort()
-    shape.vertices = vertices
-    # for idx, vertice in enumerate(vertices):
-    #     print(idx)
-        
-    #     shape.vertices.append((vertice[0], vertice[1]))
-    #     print((vertice[0], vertice[1]))
-    #     # shape.vertices[idx] = 
-    print(shape.vertices)
-
 
 def create_jar(world, properties, scene_width, scene_height, shape, color, diameter, x, y, angle, isDynamic):
     BASE_RATIO = 0.8
     WIDTH_RATIO = 1. / 1.2
-    jar_height = 220.0 / 256 * 20 * diameter
+
+    jar_height = 20.0 * _diameter_to_default_scale(diameter)
     jar_width = jar_height * WIDTH_RATIO
     jar_base_width = jar_width * BASE_RATIO
     jar_thickness = 16.0 / 256
     vertices_list, _ = _build_jar_vertices(height=jar_height, width=jar_width, base_width=jar_base_width, thickness=jar_thickness)
 
-    jar_center = _get_jar_center(scene_width, scene_height, x, y, jar_height, jar_thickness)
-    print("center")
-    print(jar_center)
+    jar_center = _get_jar_center(scene_width, scene_height, x, y, angle, jar_height, jar_thickness)
+
     literal1_shape = b2PolygonShape()
     literal2_shape = b2PolygonShape()
     bottom_shape = b2PolygonShape()
@@ -165,7 +153,6 @@ def create_jar(world, properties, scene_width, scene_height, shape, color, diame
     set_vertices(literal1_shape, vertices_list[0])
     set_vertices(literal2_shape, vertices_list[1])
     set_vertices(bottom_shape, vertices_list[2])
-
 
     literal1_fixture = b2FixtureDef(shape=literal1_shape,
                         density=properties.densities["jar"], 
@@ -188,16 +175,31 @@ def create_jar(world, properties, scene_width, scene_height, shape, color, diame
     print(body.position)
     return body
 
-# def draw_jar(draw, scene_width, scene_height, shape, color, diameter, x, y, angle):
-#     jar_height = 220 * diameter
-#     jar_width = 160 * diameter
-#     jar_base_width = 140 * diameter
-#     jar_thickness = 4
-#     vertices_list, _ = _build_jar_vertices(height=jar_height, width=jar_width, base_width=jar_base_width, thickness=jar_thickness)
-#     jar_center = _get_jar_center(scene_width, scene_height, x, y, jar_height, jar_thickness)
-#     for rect in vertices_list:
-#         draw_polygon(draw, scene_width, scene_height, "jar", "red", 1.0, jar_center[0], jar_center[1], x * scene_width, y * scene_height, angle, rect)
 
+def set_vertices(shape, vertices):
+    shape.vertexCount = len(vertices)
+    vertices.sort()
+    shape.vertices = vertices
+    print(shape.vertices)
+
+def _get_jar_center(scene_width, scene_height, x, y, angle, jar_height, jar_thickness):
+    return (width_percent_to_x(scene_width, x), 
+            height_percent_to_y(scene_height, y) - jar_height * 0.33 * math.cos(2 * math.pi * angle)) # 0.33 is an estimate for the mass center in phyre
+
+'''
+Jar builder function by PHYRE
+'''
+def _diameter_to_default_scale(diameter):
+    BASE_RATIO = 0.8
+    WIDTH_RATIO = 1. / 1.2
+    base_to_width_ratio = (1.0 - BASE_RATIO) / 2.0 + BASE_RATIO
+    width_to_height_ratio = base_to_width_ratio * WIDTH_RATIO
+    height = math.sqrt((diameter**2) / (1 + (width_to_height_ratio**2)))
+    return height
+
+'''
+Jar builder function by PHYRE
+'''
 def _build_jar_vertices(height, width, thickness, base_width):
         # Create box.
         vertices = []
@@ -235,9 +237,6 @@ def _build_jar_vertices(height, width, thickness, base_width):
    
         return [vertices, vertices_left, vertices_right], phantom_vertices
 
-
-def _get_jar_center(scene_width, scene_height, x, y, jar_height, jar_thickness):
-    return (width_percent_to_x(scene_width, x), height_percent_to_y(scene_height, y))
 
 
 def create_standing_sticks(world, properties, scene_width, scene_height, shape, color, diameter, x, y, angle, isDynamic):
