@@ -5,6 +5,7 @@ from deserializer import deserialize
 from classes.FeaturizedObject import FeaturizedObject
 from PIL import Image, ImageDraw
 import numpy as np
+import imageio
 
 from utils.phyre_creator import Constant
 from .visualizer import Visualizer
@@ -23,7 +24,26 @@ class CompareVisualizer(Visualizer):
         for log_box2d, log_nn in zip(logs_box2d, logs_nn):
             print("log file: %s   %s"%(log_box2d, log_nn))
             self.dual_replay(self.box2d_data_path + "/" + log_box2d, self.nn_data_path + '/' + log_nn)
+            exit()
 
+
+    def dual_replay(self, path1, path2):
+        box2d_image_arr=self.draw_pictures(path1)
+        nn_image_arr=self.draw_pictures(path2)
+        concat_image_arr = []
+
+        for box2d_image, nn_image in zip(box2d_image_arr, nn_image_arr):
+            image=np.concatenate([np.asarray(box2d_image), np.asarray(nn_image)], axis=1)
+            concat_image_arr.append(image)
+        #exit()
+        if self.generate_gif:
+            if not os.path.exists("gif"):
+                os.mkdir("gif")
+
+
+            imageio.mimwrite("gif/" + self.path + "/" + self.task_id + ".gif", concat_image_arr)
+
+    '''
     def dual_replay(self, path1, path2):
         box2d_image_arr=self.draw_pictures(path1)
         nn_image_arr=self.draw_pictures(path2)
@@ -32,11 +52,13 @@ class CompareVisualizer(Visualizer):
         for box2d_image, nn_image in zip(box2d_image_arr, nn_image_arr):
             image=Image.fromarray(np.concatenate([np.asarray(box2d_image), np.asarray(nn_image)], axis=1))
             concat_image_arr.append(image)
-
+        box2d_image_arr[1].save('gif/' + self.path + "/"+'01.jpg')
+        #exit()
         if self.generate_gif:
             if not os.path.exists("gif"):
                 os.mkdir("gif")
 
             # image_arr[0].save("gif/" + self.log_time + "-" + self.task_id + ".gif", save_all=True, append_images=image_arr)
             concat_image_arr[0].save("gif/" + self.path + "/" + self.task_id + ".gif", save_all=True,
-                              append_images=concat_image_arr)
+                              append_images=concat_image_arr[1:], loop=0, fps=24)
+    '''

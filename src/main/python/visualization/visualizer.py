@@ -4,6 +4,8 @@ from .object_drawer import draw_scene
 from deserializer import deserialize
 from classes.FeaturizedObject import FeaturizedObject
 from PIL import Image, ImageDraw
+import numpy as np
+import imageio
 
 from utils.phyre_creator import Constant
 
@@ -65,14 +67,16 @@ class Visualizer:
 
     def replay(self, path):
         image_arr=self.draw_pictures(path)
+        image_arr = [np.asarray(img) for img in image_arr]
 
         if self.generate_gif:
             if not os.path.exists("gif"):
                 os.mkdir("gif")
 
+
             #image_arr[0].save("gif/" + self.log_time + "-" + self.task_id + ".gif", save_all=True, append_images=image_arr)
-            image_arr[0].save("gif/" + self.path + "-" + self.task_id + ".gif", save_all=True,
-                              append_images=image_arr)
+
+            imageio.mimwrite("gif/" + self.path + "/" + self.task_id + ".gif", image_arr)
 
 
     def draw_single_picture(self, name):
@@ -89,6 +93,7 @@ class Visualizer:
                 os.makedirs(image_path)
             
             image.save(image_path + "/" + name + ".jpg")
+        #image.show()
         return image
 
     def draw_pictures(self, path):
