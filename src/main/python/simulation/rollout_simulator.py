@@ -53,12 +53,11 @@ class MyListener(b2ContactListener):
         else:
             return -1
 
-
 class RolloutSimulator(Framework):
     name = "GenBox2D GUI Tool"
     description = "Visualization for PHYRE tasks."
 
-    def __init__(self, config, tasks, properties, actions, forward_model):
+    def __init__(self, config, tasks, properties, actions, forward_model, spec):
         super(RolloutSimulator, self).__init__()
 
         self.tasks = tasks
@@ -79,6 +78,7 @@ class RolloutSimulator(Framework):
         self.curr_goal_contact_steps = 0
         self.actions = actions
         self.forward_model=forward_model
+        self.spec=spec
 
         self.world.gravity = (0.0, properties.gravity)
         self.world.contactListener = MyListener(self.bodies, self.contacts)
@@ -110,9 +110,9 @@ class RolloutSimulator(Framework):
 
             # Create directory for log file
             #now_str = "log-" + now_str
-            now_str='nn_rollout/%d-%dx%d'%(config.start_template_id,
-                                            config.end_template_id, config.num_mods)
-            os.mkdir(now_str)
+            now_str='nn_rollout/%s'%spec
+            if not os.path.exists(now_str):
+                os.mkdir(now_str)
             self.logging_dir = now_str
 
         self.load_task()
@@ -203,7 +203,7 @@ class RolloutSimulator(Framework):
         task_info=self.task.serialize_task()
         action_info=self.serialize_action()
         if self.logger is not None:
-            task_handler = logging.FileHandler(self.logging_dir + '/{task}.log'.format(task=self.task.task_id))
+            task_handler = logging.FileHandler(self.logging_dir + '/{task}.log'.format(task=self.task.task_id), mode='w')
             task_handler.setLevel(logging.INFO)
             self.logger.addHandler(task_handler)
 
@@ -226,6 +226,7 @@ class RolloutSimulator(Framework):
             self.world.ClearForces()
             contact_info=self.log_contacts()
             new_obj_data, movable_map = self.forward_model(body_info,contact_info)
+
             self.update_world(new_obj_data, movable_map)
 
             if self.logger is not None:

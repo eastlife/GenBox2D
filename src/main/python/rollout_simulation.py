@@ -54,7 +54,8 @@ def main():
     print(generator.simulator.task_ids)
 
     task_id='00000:001'
-    forward_model=rollout_predictor(task_id=task_id, model_path='/home/yiran/pc_mapping/simnet/gin-5-60.pth')
+    model_name='gin-bn-nocor-5'
+    forward_model=rollout_predictor(task_id=task_id, model_path='/home/yiran/pc_mapping/simnet/%s.pth'%model_name)
 
     if config.no_actions:
         raw_actions, scaled_actions = [], []
@@ -81,12 +82,14 @@ def main():
 
     print(sys.argv)
     sys.argv = sys.argv[:1]
+    spec='gin_bn_1-1x100'
+    os.system('rm -r nn_rollout/%s'%spec)
 
     # This import requires GUI
     from simulation.rollout_simulator import RolloutSimulator
 
     simulator = RolloutSimulator(config, generator.tasks, properties,
-                                 scaled_actions, forward_model)
+                                 scaled_actions, forward_model, spec)
 
     if config.i:
         simulator.run()

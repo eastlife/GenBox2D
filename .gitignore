@@ -75,3 +75,7 @@ images/
 image-*/
 gif-*/
 gif/
+simnet_datagen.py
+simnet_simulator.py
+gif.zip
+script_compare.py

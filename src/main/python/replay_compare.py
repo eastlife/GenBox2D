@@ -16,6 +16,7 @@ def get_config_from_args():
                         default='nn_rollout')
     parser.add_argument("--log_path", type=str, default='GIN5-task1-1x100')
     parser.add_argument("--tasks_label", type=str, default="1-1x100")
+    parser.add_argument('--spec',type=str, default='gin_bn_')
     parser.add_argument("--compare_path", type=str,
                         default='compare/')
     parser.add_argument("--dir", help="the path is a directory or not", action="store_true", default=True)
