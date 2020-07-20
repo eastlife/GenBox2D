@@ -1,0 +1,42 @@
+import os
+
+from .object_drawer import draw_scene
+from deserializer import deserialize
+from classes.FeaturizedObject import FeaturizedObject
+from PIL import Image, ImageDraw
+import numpy as np
+
+from utils.phyre_creator import Constant
+from .visualizer import Visualizer
+
+class CompareVisualizer(Visualizer):
+
+    def __init__(self, config):
+        super(CompareVisualizer, self).__init__(config)
+        self.box2d_data_path=config.box2d_data_path+'/'+config.tasks_label
+        self.nn_data_path=config.nn_data_path+'/'+config.tasks_label
+
+    def replay_dir(self):
+        os.system('mkdir gif/%s'%self.path)
+        logs_box2d = os.listdir(self.box2d_data_path)
+        logs_nn = os.listdir(self.nn_data_path)
+        for log_box2d, log_nn in zip(logs_box2d, logs_nn):
+            print("log file: %s   %s"%(log_box2d, log_nn))
+            self.dual_replay(self.box2d_data_path + "/" + log_box2d, self.nn_data_path + '/' + log_nn)
+
+    def dual_replay(self, path1, path2):
+        box2d_image_arr=self.draw_pictures(path1)
+        nn_image_arr=self.draw_pictures(path2)
+        concat_image_arr = []
+
+        for box2d_image, nn_image in zip(box2d_image_arr, nn_image_arr):
+            image=Image.fromarray(np.concatenate([np.asarray(box2d_image), np.asarray(nn_image)], axis=1))
+            concat_image_arr.append(image)
+
+        if self.generate_gif:
+            if not os.path.exists("gif"):
+                os.mkdir("gif")
+
+            # image_arr[0].save("gif/" + self.log_time + "-" + self.task_id + ".gif", save_all=True, append_images=image_arr)
+            concat_image_arr[0].save("gif/" + self.path + "/" + self.task_id + ".gif", save_all=True,
+                              append_images=concat_image_arr)

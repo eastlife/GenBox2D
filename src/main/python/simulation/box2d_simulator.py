@@ -106,7 +106,9 @@ class TaskSimulator (Framework):
             self.logger = logger
 
             # Create directory for log file
-            now_str = "log-" + now_str
+            #now_str = "log-" + now_str
+            now_str = "box2d_data/%d-%dx%d"%(config.start_template_id,
+                                              config.end_template_id, config.num_mods)
             os.mkdir(now_str)
             self.logging_dir = now_str
 
@@ -145,7 +147,6 @@ class TaskSimulator (Framework):
             body = create_body(self.world, self.properties, 
                                 self.SCENE_WIDTH, self.SCENE_HEIGHT, 
                                 shape, color, diameter, x, y, angle)
-
             if body is not None:
                 self.bodies.append(body)
 
@@ -208,6 +209,7 @@ class TaskSimulator (Framework):
         vel_iters, pos_iters = 6, 2
 
         for i in range(self.total_steps):
+            body_info=self.log_bodies()
             # Instruct the world to perform a single step of simulation. It is
             # generally best to keep the time step and iterations fixed.
             self.world.Step(timeStep, vel_iters, pos_iters)
@@ -215,9 +217,10 @@ class TaskSimulator (Framework):
             # Clear applied body forces. We didn't apply any forces, but you
             # should know about this function.
             self.world.ClearForces()
+            contact_info=self.log_contacts()
         
             if self.logger is not None:
-                self.logger.info(self.serialize_timestamp(i))
+                self.logger.info(self.serialize_timestamp(i, body_info, contact_info))
 
             self.update_goal_contact()
             self.contacts.clear()
@@ -282,11 +285,13 @@ class TaskSimulator (Framework):
             isSuccess = self.replay_task()
 
     # loggers
-    def serialize_timestamp(self, timestamp):
+    def serialize_timestamp(self, timestamp, body_info=None, contact_info=None):
+        if body_info is None: body_info=self.log_bodies()
+        if contact_info is None: contact_info=self.log_contacts()
         json_dict = {}
         json_dict["timestamp"] = timestamp
-        json_dict["body_info"] = self.log_bodies()
-        json_dict["contact_info"] = self.log_contacts()
+        json_dict["body_info"] = body_info
+        json_dict["contact_info"] = contact_info
         return json.dumps(json_dict)
 
     def serialize_action(self):

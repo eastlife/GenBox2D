@@ -55,37 +55,24 @@ class Visualizer:
         logs = os.listdir(self.path)
         for log_file in logs:
             print("log file: " + log_file)
-            
-            self.deserialize_log(self.path + "/" + log_file)
-            self.replay()
+
+            self.replay(self.path + "/" + log_file)
             
 
     def replay_file(self):
-        self.deserialize_log(self.path)
-        self.replay()
+        self.replay(self.path)
 
 
-    def replay(self):
+    def replay(self, path):
+        image_arr=self.draw_pictures(path)
 
-        self.draw_single_picture("initial")
-        image_arr = []
-
-        timestamp_info = self.timestamp_info
-
-        for timestamp, info in enumerate(timestamp_info):
-            featurized_objects = self.featurized_objects
-            for idx, body in enumerate(info['body_info']['bodies']):
-                featurized_objects[idx].initial_x = (body['pos_x'] + 10) / 20.0
-                featurized_objects[idx].initial_y = body['pos_y'] / 20.0
-                featurized_objects[idx].initial_angle = body['angle']
-
-            image = self.draw_single_picture(str(timestamp))
-            image_arr.append(image)
         if self.generate_gif:
             if not os.path.exists("gif"):
                 os.mkdir("gif")
 
-            image_arr[0].save("gif/" + self.log_time + "-" + self.task_id + ".gif", save_all=True, append_images=image_arr)
+            #image_arr[0].save("gif/" + self.log_time + "-" + self.task_id + ".gif", save_all=True, append_images=image_arr)
+            image_arr[0].save("gif/" + self.path + "-" + self.task_id + ".gif", save_all=True,
+                              append_images=image_arr)
 
 
     def draw_single_picture(self, name):
@@ -103,3 +90,21 @@ class Visualizer:
             
             image.save(image_path + "/" + name + ".jpg")
         return image
+
+    def draw_pictures(self, path):
+        self.deserialize_log(path)
+        self.draw_single_picture("initial")
+        image_arr = []
+
+        timestamp_info = self.timestamp_info
+
+        for timestamp, info in enumerate(timestamp_info):
+            featurized_objects = self.featurized_objects
+            for idx, body in enumerate(info['body_info']['bodies']):
+                featurized_objects[idx].initial_x = (body['pos_x'] + 10) / 20.0
+                featurized_objects[idx].initial_y = body['pos_y'] / 20.0
+                featurized_objects[idx].initial_angle = body['angle']
+
+            image = self.draw_single_picture(str(timestamp))
+            image_arr.append(image)
+        return image_arr

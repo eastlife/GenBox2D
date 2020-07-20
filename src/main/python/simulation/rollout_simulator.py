@@ -109,7 +109,9 @@ class RolloutSimulator(Framework):
             self.data_logger=data_logger
 
             # Create directory for log file
-            now_str = "log-" + now_str
+            #now_str = "log-" + now_str
+            now_str='nn_rollout/%d-%dx%d'%(config.start_template_id,
+                                            config.end_template_id, config.num_mods)
             os.mkdir(now_str)
             self.logging_dir = now_str
 
