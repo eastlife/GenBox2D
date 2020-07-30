@@ -12,13 +12,18 @@ from .visualizer import Visualizer
 
 class CompareVisualizer(Visualizer):
 
-    def __init__(self, config):
+    def __init__(self, config, root_dir):
         super(CompareVisualizer, self).__init__(config)
-        self.box2d_data_path=config.box2d_data_path+'/'+config.tasks_label
-        self.nn_data_path=config.nn_data_path+'/'+config.spec+config.tasks_label
+        #self.box2d_data_path=config.box2d_data_path+'/'+config.tasks_label
+        #self.nn_data_path=config.nn_data_path+'/'+config.spec+config.tasks_label
+        self.box2d_data_path=root_dir + '/' + config.box2d_data_path+'/'+config.raw_dataset_name
+        self.nn_data_path=root_dir + '/' + config.nn_data_path+'/'+config.exp_name
+        self.gif_root_path=root_dir + '/' + 'gif'
+        self.gif_save_dir=root_dir + '/' + 'gif/%s'%self.path
 
     def replay_dir(self):
-        os.system('mkdir gif/%s'%self.path)
+        if not os.path.exists(self.gif_save_dir):
+            os.mkdir(self.gif_save_dir)
         #logs_box2d = os.listdir(self.box2d_data_path)
         logs_nn = os.listdir(self.nn_data_path)
         #for log_box2d, log_nn in zip(logs_box2d, logs_nn):
@@ -29,6 +34,7 @@ class CompareVisualizer(Visualizer):
             self.dual_replay(self.box2d_data_path + "/" + filename, self.nn_data_path + '/' + filename)
 
     def dual_replay(self, path1, path2):
+        #print('@compare_vis.dual_replay: %s %s', path1, path2)
         #print('call compare_visualizer.dual_replay() with %s %s'%(path1, path2))
         box2d_image_arr=self.draw_pictures(path1)
         #print('@compare_visualizer.dual_replay: draw nn image')
@@ -40,9 +46,9 @@ class CompareVisualizer(Visualizer):
             concat_image_arr.append(image)
         #exit()
         if self.generate_gif:
-            if not os.path.exists("gif"):
-                os.mkdir("gif")
-            imageio.mimwrite("gif/" + self.path + "/" + self.task_id + ".gif", concat_image_arr)
+            if not os.path.exists(self.gif_root_path):
+                os.mkdir(self.gif_root_path)
+            imageio.mimwrite(self.gif_save_dir + "/" + self.task_id + ".gif", concat_image_arr)
 
     '''
     def dual_replay(self, path1, path2):

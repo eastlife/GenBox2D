@@ -79,3 +79,7 @@ simnet_datagen.py
 simnet_simulator.py
 gif.zip
 script_compare.py
+src/main/python/box2d_data
+src/main/python/pipeline.py
+src/main/python/runs
+src/main/python/__init__.py

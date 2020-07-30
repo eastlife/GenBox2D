@@ -29,6 +29,7 @@ class Visualizer:
 
         self.task_info = task_info
         self.action_info = action_info
+        #print('@vis.deserialize_log: action info=', action_info)
         self.timestamp_info = timestamp_info
         self.solved_info = solved_info
         self.featurized_objects = self.get_objects_from_json(task_info)
@@ -99,6 +100,7 @@ class Visualizer:
     def draw_pictures(self, path):
         self.deserialize_log(path)
         self.draw_single_picture("initial")
+        #print(path)
         image_arr = []
 
         timestamp_info = self.timestamp_info

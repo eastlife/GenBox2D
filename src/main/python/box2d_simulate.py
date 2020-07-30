@@ -7,6 +7,7 @@ import matplotlib.pyplot as plt
 import argparse
 from classes.WorldProperties import WorldProperties
 from classes.Generator import Generator
+import numpy as np
 
 
 def get_config_from_args():
@@ -43,13 +44,24 @@ def get_config_from_args():
     return config
 
 
-def main():
+def box2d_simulate(sid, eid, nmod, raw_dataset_name, box2d_root_dir='/home/yiran/pc_mapping/GenBox2D/src/main/python'):
     config = get_config_from_args()
-
+    config.start_template_id=sid
+    config.end_template_id=eid
+    config.num_mods=nmod
+    config.raw_dataset_name=raw_dataset_name
+    config.box2d_root_dir=box2d_root_dir
+    log_dir=box2d_root_dir+'/box2d_data/'+raw_dataset_name
+    if not os.path.exists(log_dir):
+        os.mkdir(log_dir)
+    else:
+        return
+    config.log_dir=log_dir
     generator = Generator(config)
 
     print('ids')
     print(generator.simulator.task_ids)
+
 
     if config.no_actions:
         raw_actions, scaled_actions = [], []
@@ -58,6 +70,14 @@ def main():
     else:
         raw_actions, scaled_actions = generator.get_multiple_actions(len(generator.simulator.task_ids))
 
+    print('box2d actions:\n',raw_actions)
+    print(scaled_actions)
+    raw_actions=np.array(raw_actions)
+    scaled_actions=np.array(scaled_actions)
+    np.save(log_dir+'/raw_actions.npy', raw_actions)
+    np.save(log_dir+'/scaled_actions.npy', scaled_actions)
+    #print(np.load(log_dir+'/raw_actions.npy'))
+    #print(np.load(log_dir+'/scaled_actions.npy'))
     # # using PHYRE API to simulate and visualize
     # for i in range(len(generator.simulator.task_ids)):
     #     simulation = generator.simulator.simulate_action(i, raw_actions[0], need_images=True)
@@ -67,7 +87,8 @@ def main():
     #     plt.imsave(str(i) + ".png", image)
 
 
-    config_path_abs = os.path.join(os.getcwd(), "config", config.config_path)
+    #config_path_abs = os.path.join(os.getcwd(), "config", config.config_path)
+    config_path_abs=os.path.join(box2d_root_dir,'config', config.config_path)
 
     properties = WorldProperties(config_path_abs)
 
@@ -94,4 +115,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    box2d_simulate('1-1x5')

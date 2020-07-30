@@ -3,6 +3,7 @@ import sys
 import os
 import phyre
 import matplotlib.pyplot as plt
+import numpy as np
 
 import argparse
 from classes.WorldProperties import WorldProperties
@@ -10,12 +11,11 @@ from classes.Generator import Generator
 sys.path.append('/home/yiran/pc_mapping/simnet/')
 from rollout_predictor import rollout_predictor
 
-
 def get_config_from_args():
     parser = argparse.ArgumentParser()
     # select either a single task id by setting --task_id
     # or a range of tasks by setting --start_template_id, --end_template_id and --num_mods
-    parser.add_argument("--task_id", help="input a specific task id with format xxxxx:xxx", type=str)
+    parser.add_argument("--task_id", help="input a exp_nameific task id with format xxxxx:xxx", type=str)
 
     parser.add_argument("--start_template_id", help="start template id", type=int, default=1)
     parser.add_argument("--end_template_id", help="end template id", type=int, default=1)
@@ -40,30 +40,36 @@ def get_config_from_args():
     parser.add_argument("--always_active", help="set objects in the scene to be active at all times", action="store_true", default=False)
 
     parser.add_argument("--solved_threshold", help="the minimum frames (steps) for two goal objects contacted", type=int, default=60)
-
+    parser.add_argument("--exp_name", type=str, default='gine')
     config = parser.parse_args()
     return config
 
 
-def main():
-    config = get_config_from_args()
+def simulate(sid=1, eid=1, num_mods=100, raw_dataset_name='1-1x100', exp_name='gine', root_dir='/home/yiran/pc_mapping/GenBox2D/src/main/python'):
+    config=get_config_from_args()
+    config.start_template_id=sid
+    config.end_template_id=eid
+    config.num_mods=num_mods
+    config.exp_name=exp_name
+    config.raw_dataset_name=raw_dataset_name
 
     generator = Generator(config)
 
     print('ids')
     print(generator.simulator.task_ids)
 
-    task_id='00000:001'
-    model_name='gin-bn-nocor-5'
-    forward_model=rollout_predictor(task_id=task_id, model_path='/home/yiran/pc_mapping/simnet/%s.pth'%model_name)
 
-    if config.no_actions:
-        raw_actions, scaled_actions = [], []
-    elif config.same_actions:
-        raw_actions, scaled_actions = generator.get_same_actions(len(generator.simulator.task_ids))
-    else:
-        raw_actions, scaled_actions = generator.get_multiple_actions(len(generator.simulator.task_ids))
-
+    #if config.no_actions:
+    #    raw_actions, scaled_actions = [], []
+    #elif config.same_actions:
+    #    raw_actions, scaled_actions = generator.get_same_actions(len(generator.simulator.task_ids))
+    #else:
+    #    raw_actions, scaled_actions = generator.get_multiple_actions(len(generator.simulator.task_ids))
+    #print(root_dir+'/box2d_data/'+raw_dataset_name+'/raw_actions.npy')
+    #raw_actions=np.load('/home/yiran/pc_mapping/GenBox2D/src/main/python/box2d_data/1-1x5/raw_actions.npy')
+    #scaled_actions=np.load('/home/yiran/pc_mapping/GenBox2D/src/main/python/box2d_data/1-1x5/scaled_actions.npy')
+    raw_actions = np.load(root_dir+'/box2d_data/'+raw_dataset_name+'/raw_actions.npy')
+    scaled_actions=np.load(root_dir+'/box2d_data/'+raw_dataset_name+'/scaled_actions.npy')
     # # using PHYRE API to simulate and visualize
     # for i in range(len(generator.simulator.task_ids)):
     #     simulation = generator.simulator.simulate_action(i, raw_actions[0], need_images=True)
@@ -73,7 +79,8 @@ def main():
     #     plt.imsave(str(i) + ".png", image)
 
 
-    config_path_abs = os.path.join(os.getcwd(), "config", config.config_path)
+    #config_path_abs = os.path.join(os.getcwd(), "config", config.config_path)
+    config_path_abs=os.path.join(root_dir,'config', config.config_path)
 
     properties = WorldProperties(config_path_abs)
 
@@ -82,14 +89,14 @@ def main():
 
     print(sys.argv)
     sys.argv = sys.argv[:1]
-    spec='gin_bn_1-1x100'
-    os.system('rm -r nn_rollout/%s'%spec)
+    os.system('rm -r %s/nn_rollout/%s'%(root_dir, exp_name))
 
     # This import requires GUI
     from simulation.rollout_simulator import RolloutSimulator
 
+    forward_model=rollout_predictor(model_path='/home/yiran/pc_mapping/simnet/saved_models/%s.pth'%exp_name)
     simulator = RolloutSimulator(config, generator.tasks, properties,
-                                 scaled_actions, forward_model, spec)
+                                 scaled_actions, forward_model, exp_name, root_dir)
 
     if config.i:
         simulator.run()
@@ -103,4 +110,5 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    #config = get_config_from_args()
+    simulate(1,1,5)

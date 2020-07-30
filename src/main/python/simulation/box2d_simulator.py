@@ -107,10 +107,9 @@ class TaskSimulator (Framework):
 
             # Create directory for log file
             #now_str = "log-" + now_str
-            now_str = "box2d_data/%d-%dx%d"%(config.start_template_id,
-                                              config.end_template_id, config.num_mods)
-            os.mkdir(now_str)
-            self.logging_dir = now_str
+            #now_str = "box2d_data/%d-%dx%d"%(config.start_template_id,
+            #                                  config.end_template_id, config.num_mods)
+            self.logging_dir = config.log_dir
 
         self.load_task()
 
@@ -197,7 +196,7 @@ class TaskSimulator (Framework):
             raise Exception
 
         if self.logger is not None:
-            task_handler = logging.FileHandler(self.logging_dir + '/{task}.log'.format(task = self.task.task_id))
+            task_handler = logging.FileHandler(self.logging_dir + '/{task}.log'.format(task = self.task.task_id), 'w+')
             task_handler.setLevel(logging.INFO)
             self.logger.addHandler(task_handler)
 

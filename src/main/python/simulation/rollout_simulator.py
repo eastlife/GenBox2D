@@ -57,7 +57,7 @@ class RolloutSimulator(Framework):
     name = "GenBox2D GUI Tool"
     description = "Visualization for PHYRE tasks."
 
-    def __init__(self, config, tasks, properties, actions, forward_model, spec):
+    def __init__(self, config, tasks, properties, actions, forward_model, exp_name, root_dir):
         super(RolloutSimulator, self).__init__()
 
         self.tasks = tasks
@@ -78,7 +78,7 @@ class RolloutSimulator(Framework):
         self.curr_goal_contact_steps = 0
         self.actions = actions
         self.forward_model=forward_model
-        self.spec=spec
+        self.exp_name=exp_name
 
         self.world.gravity = (0.0, properties.gravity)
         self.world.contactListener = MyListener(self.bodies, self.contacts)
@@ -110,7 +110,7 @@ class RolloutSimulator(Framework):
 
             # Create directory for log file
             #now_str = "log-" + now_str
-            now_str='nn_rollout/%s'%spec
+            now_str=root_dir + '/' + 'nn_rollout/%s'%exp_name
             if not os.path.exists(now_str):
                 os.mkdir(now_str)
             self.logging_dir = now_str
@@ -283,6 +283,9 @@ class RolloutSimulator(Framework):
             body_attr=label[i]
             body=self.bodies[idx]
             body._b2Body__SetTransform((body_attr[1], body_attr[2]), body_attr[0])
+            #print('@rollout_simulator.update_world: setting velocity ',(body_attr[3], body_attr[4]))
+            #assert abs(body_attr[3])<100
+            #assert abs(body_attr[4])<100
             body._b2Body__SetLinearVelocity((body_attr[3], body_attr[4]))
             body._b2Body__SetAngularVelocity(body_attr[5])
 
