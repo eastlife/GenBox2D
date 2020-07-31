@@ -94,9 +94,18 @@ def simulate(sid=1, eid=1, num_mods=100, raw_dataset_name='1-1x100', exp_name='g
     # This import requires GUI
     from simulation.rollout_simulator import RolloutSimulator
 
+    selected_tasks=[]
+    selected_actions=[]
+    for i in range(12):
+        for j in range(3):
+            selected_tasks.append(generator.tasks[i*100+j])
+            selected_actions.append(scaled_actions[i*100+j])
+    print(selected_tasks)
     forward_model=rollout_predictor(model_path='/home/yiran/pc_mapping/simnet/saved_models/%s.pth'%exp_name)
-    simulator = RolloutSimulator(config, generator.tasks, properties,
-                                 scaled_actions, forward_model, exp_name, root_dir)
+    #simulator = RolloutSimulator(config, generator.tasks, properties,
+    #                             scaled_actions, forward_model, exp_name, root_dir)
+    simulator = RolloutSimulator(config, selected_tasks, properties,
+                                 selected_actions, forward_model, exp_name, root_dir)
 
     if config.i:
         simulator.run()

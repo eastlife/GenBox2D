@@ -43,4 +43,4 @@ def compare(raw_dataset_name, exp_name, root_dir='/home/yiran/pc_mapping/GenBox2
 
 if __name__ == '__main__':
     config = get_config_from_args()
-    compare(config)
+    compare(raw_dataset_name='0-11x100', exp_name='gine_ev_ep40_lr0.001000_h128_0-11x100-ep25')

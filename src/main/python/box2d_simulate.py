@@ -52,16 +52,15 @@ def box2d_simulate(sid, eid, nmod, raw_dataset_name, box2d_root_dir='/home/yiran
     config.raw_dataset_name=raw_dataset_name
     config.box2d_root_dir=box2d_root_dir
     log_dir=box2d_root_dir+'/box2d_data/'+raw_dataset_name
+    config.log_dir=log_dir
+    generator = Generator(config)
     if not os.path.exists(log_dir):
         os.mkdir(log_dir)
     else:
-        return
-    config.log_dir=log_dir
-    generator = Generator(config)
+        return generator.simulator.task_ids
 
     print('ids')
     print(generator.simulator.task_ids)
-
 
     if config.no_actions:
         raw_actions, scaled_actions = [], []
@@ -70,8 +69,8 @@ def box2d_simulate(sid, eid, nmod, raw_dataset_name, box2d_root_dir='/home/yiran
     else:
         raw_actions, scaled_actions = generator.get_multiple_actions(len(generator.simulator.task_ids))
 
-    print('box2d actions:\n',raw_actions)
-    print(scaled_actions)
+    #print('box2d actions:\n',raw_actions)
+    #print(scaled_actions)
     raw_actions=np.array(raw_actions)
     scaled_actions=np.array(scaled_actions)
     np.save(log_dir+'/raw_actions.npy', raw_actions)
@@ -112,6 +111,7 @@ def box2d_simulate(sid, eid, nmod, raw_dataset_name, box2d_root_dir='/home/yiran
             simulator.next_task()
 
     print("done")
+    return generator.simulator.task_ids
 
 
 if __name__ == '__main__':
