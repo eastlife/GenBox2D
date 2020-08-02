@@ -44,15 +44,11 @@ def get_config_from_args():
     return config
 
 
-def box2d_simulate(sid, eid, nmod, raw_dataset_name, box2d_root_dir='/home/yiran/pc_mapping/GenBox2D/src/main/python'):
-    config = get_config_from_args()
-    config.start_template_id=sid
-    config.end_template_id=eid
-    config.num_mods=nmod
-    config.raw_dataset_name=raw_dataset_name
-    config.box2d_root_dir=box2d_root_dir
-    log_dir=box2d_root_dir+'/box2d_data/'+raw_dataset_name
-    config.log_dir=log_dir
+#def box2d_simulate(sid, eid, nmod, raw_dataset_name, box2d_root_dir='/home/yiran/pc_mapping/GenBox2D/src/main/python'):
+def box2d_simulate(config):
+    #config = get_config_from_args()
+    box2d_root_dir=config.box2d_root_dir
+    log_dir=config.log_dir
     generator = Generator(config)
     if not os.path.exists(log_dir):
         os.mkdir(log_dir)

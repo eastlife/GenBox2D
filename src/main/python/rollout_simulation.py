@@ -45,13 +45,8 @@ def get_config_from_args():
     return config
 
 
-def simulate(sid=1, eid=1, num_mods=100, raw_dataset_name='1-1x100', exp_name='gine', root_dir='/home/yiran/pc_mapping/GenBox2D/src/main/python'):
-    config=get_config_from_args()
-    config.start_template_id=sid
-    config.end_template_id=eid
-    config.num_mods=num_mods
-    config.exp_name=exp_name
-    config.raw_dataset_name=raw_dataset_name
+#def simulate(sid=1, eid=1, num_mods=100, raw_dataset_name='1-1x100', exp_name='gine', root_dir='/home/yiran/pc_mapping/GenBox2D/src/main/python'):
+def simulate(config):
 
     generator = Generator(config)
 
@@ -68,8 +63,9 @@ def simulate(sid=1, eid=1, num_mods=100, raw_dataset_name='1-1x100', exp_name='g
     #print(root_dir+'/box2d_data/'+raw_dataset_name+'/raw_actions.npy')
     #raw_actions=np.load('/home/yiran/pc_mapping/GenBox2D/src/main/python/box2d_data/1-1x5/raw_actions.npy')
     #scaled_actions=np.load('/home/yiran/pc_mapping/GenBox2D/src/main/python/box2d_data/1-1x5/scaled_actions.npy')
-    raw_actions = np.load(root_dir+'/box2d_data/'+raw_dataset_name+'/raw_actions.npy')
-    scaled_actions=np.load(root_dir+'/box2d_data/'+raw_dataset_name+'/scaled_actions.npy')
+    action_path=config.box2d_root_dir+'/box2d_data/'+config.raw_dataset_name
+    raw_actions = np.load(action_path+'/raw_actions.npy')
+    scaled_actions=np.load(action_path+'/scaled_actions.npy')
     # # using PHYRE API to simulate and visualize
     # for i in range(len(generator.simulator.task_ids)):
     #     simulation = generator.simulator.simulate_action(i, raw_actions[0], need_images=True)
@@ -80,7 +76,7 @@ def simulate(sid=1, eid=1, num_mods=100, raw_dataset_name='1-1x100', exp_name='g
 
 
     #config_path_abs = os.path.join(os.getcwd(), "config", config.config_path)
-    config_path_abs=os.path.join(root_dir,'config', config.config_path)
+    config_path_abs=os.path.join(config.box2d_root_dir,'config', config.config_path)
 
     properties = WorldProperties(config_path_abs)
 
@@ -89,7 +85,7 @@ def simulate(sid=1, eid=1, num_mods=100, raw_dataset_name='1-1x100', exp_name='g
 
     print(sys.argv)
     sys.argv = sys.argv[:1]
-    os.system('rm -r %s/nn_rollout/%s'%(root_dir, exp_name))
+    os.system('rm -r %s/nn_rollout/%s'%(config.box2d_root_dir, config.exp_name))
 
     # This import requires GUI
     from simulation.rollout_simulator import RolloutSimulator
@@ -105,7 +101,8 @@ def simulate(sid=1, eid=1, num_mods=100, raw_dataset_name='1-1x100', exp_name='g
     #simulator = RolloutSimulator(config, generator.tasks, properties,
     #                             scaled_actions, forward_model, exp_name, root_dir)
     simulator = RolloutSimulator(config, selected_tasks, properties,
-                                 selected_actions, forward_model, exp_name, root_dir)
+                                 selected_actions, forward_model,
+                                 config.exp_name, config.box2d_root_dir)
 
     if config.i:
         simulator.run()
