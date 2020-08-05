@@ -50,6 +50,8 @@ def box2d_simulate(config):
     box2d_root_dir=config.box2d_root_dir
     log_dir=config.log_dir
     generator = Generator(config)
+    if config.clear_box2d_data:
+        os.system('rm -r %s'%log_dir)
     if not os.path.exists(log_dir):
         os.mkdir(log_dir)
     else:

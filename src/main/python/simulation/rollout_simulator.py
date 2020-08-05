@@ -286,6 +286,8 @@ class RolloutSimulator(Framework):
             #print('@rollout_simulator.update_world: setting velocity ',(body_attr[3], body_attr[4]))
             #assert abs(body_attr[3])<100
             #assert abs(body_attr[4])<100
+            #print(body_attr[3])
+            #print(body_attr[4])
             body._b2Body__SetLinearVelocity((body_attr[3], body_attr[4]))
             body._b2Body__SetAngularVelocity(body_attr[5])
 

@@ -92,12 +92,11 @@ def simulate(config):
 
     selected_tasks=[]
     selected_actions=[]
-    for i in range(12):
-        for j in range(3):
-            selected_tasks.append(generator.tasks[i*100+j])
-            selected_actions.append(scaled_actions[i*100+j])
-    print(selected_tasks)
-    forward_model=rollout_predictor(model_path='/home/yiran/pc_mapping/simnet/saved_models/%s.pth'%exp_name)
+    for i in range(config.end_template_id-config.start_template_id+1):
+        for j in range(min(3,config.num_mods)):
+            selected_tasks.append(generator.tasks[i*config.num_mods+j])
+            selected_actions.append(scaled_actions[i*config.num_mods+j])
+    forward_model=rollout_predictor(config)
     #simulator = RolloutSimulator(config, generator.tasks, properties,
     #                             scaled_actions, forward_model, exp_name, root_dir)
     simulator = RolloutSimulator(config, selected_tasks, properties,
@@ -107,7 +106,8 @@ def simulate(config):
     if config.i:
         simulator.run()
     else:
-        for i in range(len(generator.tasks)):
+        #for i in range(len(generator.tasks)):
+        for i in range(len(selected_tasks)):
             print("**Run task**")
             simulator.run_sim()
             simulator.next_task()
