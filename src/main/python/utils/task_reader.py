@@ -24,3 +24,12 @@ def load_compiled_task_dict():
                 task_map_all[task_template] = []
             task_map_all[task_template].append(task_mod)
     return task_map_all, phyre_task
+
+def get_task_ids(sid, eid, nmods):
+    tasks_map, _ = load_compiled_task_dict()
+    task_ids = []
+    for i in range(sid, eid + 1, 1):
+        task_mods = tasks_map[str(i).zfill(5)]
+        for j in range(nmods):
+            task_ids.append(str(i).zfill(5) + ":" + task_mods[j])
+    return task_ids
