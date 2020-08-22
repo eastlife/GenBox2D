@@ -150,7 +150,7 @@ class TaskSimulator (Framework):
                 self.bodies.append(body)
 
             if featurized_object.is_goal():
-                self.goal_objects.append(body)   
+                self.goal_objects.append(body)
             
         if (self.actions is not None) and (len(self.actions) != 0):
             if len(self.actions) != len(self.tasks):
