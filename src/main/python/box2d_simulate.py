@@ -96,9 +96,9 @@ def box2d_simulate(config):
     sys.argv = sys.argv[:1]
 
     # This import requires GUI
-    from simulation.box2d_simulator import TaskSimulator
+    from simulation.box2d_simulator import Box2DSimulator
 
-    simulator = TaskSimulator(config, generator.tasks, properties, scaled_actions)
+    simulator = Box2DSimulator(config, generator.tasks, properties, scaled_actions)
 
     if config.i:
         simulator.run()

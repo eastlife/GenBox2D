@@ -8,8 +8,7 @@ import numpy as np
 import argparse
 from classes.WorldProperties import WorldProperties
 from classes.Generator import Generator
-sys.path.append('/home/yiran/pc_mapping/simnet/')
-from rollout_predictor import rollout_predictor
+from solver.collision_solver import CollisionSolver
 
 def get_config_from_args():
     parser = argparse.ArgumentParser()
@@ -96,7 +95,7 @@ def simulate(config):
         for j in range(min(3,config.num_mods)):
             selected_tasks.append(generator.tasks[i*config.num_mods+j])
             selected_actions.append(scaled_actions[i*config.num_mods+j])
-    forward_model=rollout_predictor(config)
+    forward_model=CollisionSolver()
     #simulator = RolloutSimulator(config, generator.tasks, properties,
     #                             scaled_actions, forward_model, exp_name, root_dir)
     simulator = RolloutSimulator(config, selected_tasks, properties,

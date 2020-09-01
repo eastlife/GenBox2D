@@ -14,9 +14,9 @@ from classes.FeaturizedObject import FeaturizedObject
 from .object_creator import create_body
 
 
-class MyListener (b2ContactListener):
+class Box2DContactListener (b2ContactListener):
     def __init__(self, bodies, contacts):
-        super(MyListener, self).__init__()
+        super(Box2DContactListener, self).__init__()
         self.bodies = bodies
         self.contacts = contacts
 
@@ -40,6 +40,7 @@ class MyListener (b2ContactListener):
         json_contact = {}
         json_contact["body_a"] = self._find_body(contact.fixtureA.body)
         json_contact["body_b"] = self._find_body(contact.fixtureB.body)
+        json_contact["point_count"] = contact.manifold.pointCount
         json_contact["manifold_normal"] = (contact.worldManifold.normal[0], contact.worldManifold.normal[1])
 
         json_contact["points"] = contact.worldManifold.points
@@ -56,12 +57,12 @@ class MyListener (b2ContactListener):
 
 
 
-class TaskSimulator (Framework):
+class Box2DSimulator (Framework):
     name = "GenBox2D GUI Tool"
     description = "Visualization for PHYRE tasks."
 
     def __init__(self, config, tasks, properties, actions):
-        super(TaskSimulator, self).__init__()
+        super(Box2DSimulator, self).__init__()
 
         self.tasks = tasks
         self.properties = properties
@@ -82,7 +83,7 @@ class TaskSimulator (Framework):
         self.actions = actions
 
         self.world.gravity = (0.0, properties.gravity)
-        self.world.contactListener = MyListener(self.bodies, self.contacts)
+        self.world.contactListener = Box2DContactListener(self.bodies, self.contacts)
 
         self.SCENE_WIDTH = properties.SCENE_WIDTH
         self.SCENE_HEIGHT = properties.SCENE_HEIGHT
@@ -98,7 +99,11 @@ class TaskSimulator (Framework):
         now_str = now.strftime("%m-%d-%Y-%H-%M-%S")
 
         self.log_time = now_str
+        self.define_loggers(config)
 
+        self.load_task()
+
+    def define_loggers(self, config):
         if not self.interactive:
             # Create logger
             logger = logging.getLogger()
@@ -111,7 +116,6 @@ class TaskSimulator (Framework):
             #                                  config.end_template_id, config.num_mods)
             self.logging_dir = config.log_dir
 
-        self.load_task()
 
     def _create_boundaries(self):
         # The boundaries
@@ -338,6 +342,8 @@ class TaskSimulator (Framework):
             json_body["velocity_x"] = body.linearVelocity[0]
             json_body["velocity_y"] = body.linearVelocity[1]
             json_body["angular_velocity"] = body.angularVelocity
+            json_body["inertia"] = body.inertia
+            json_body["mass"] = body.mass
             json_bodies.append(json_body)
 
         json_dict["bodies"] = json_bodies

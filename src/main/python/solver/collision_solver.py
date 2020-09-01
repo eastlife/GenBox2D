@@ -12,6 +12,26 @@ class CollisionSolver():
         self.restitution=0.3
         self.obj_num=None
 
+    def __call__(self, body_info, contact_info):
+        self.obj_num = len(body_info)
+        return self.solve_integrate(body_info, contact_info)
+
+    def solve_integrate(self, body_info, contact_info):
+        pos, velocity, theta, omega, mass, inertia = self.extract_body_attr(body_info)
+        contact, normal, manifold = self.extract_contact_attr(contact_info)
+        generalized_velocity = self.get_generalized_velocity(velocity, omega)
+        # pos, velocity, angular_v, mass, inertia, conn, manifold
+        jacobian, bias, obj_idx=self.get_jacobian_with_bias(pos, velocity, omega, contact, normal, manifold)
+        f_ext=self.get_external_force(mass)
+        eta=bias/self.dt - self.sparse_dot_vec(jacobian, generalized_velocity/self.dt + self.get_inv_mass_dot_vec(mass, f_ext), obj_idx)
+        force = self.PGS_solve(jacobian, mass, inertia, eta, obj_idx, self.solve_iters)
+        generalized_velocity_next = generalized_velocity + self.dt*self.get_inv_mass_dot_vec(np.dot(jacobian.T, force)+f_ext)
+        velocity_next, omega_next = self.retrieve_velocities_from_generalized(generalized_velocity_next)
+        pos_next = pos[:,:2] + self.dt*velocity_next
+        theta_next = theta + self.dt/2*omega_next*omega_next
+        obj_attr = self.assemble_obj_attr(pos_next, theta_next, velocity_next, omega_next)
+        return obj_attr
+
     def update_task(self, task_info, action_info):
         pass
 
@@ -21,62 +41,81 @@ class CollisionSolver():
             ret.append([velocity[i][0], velocity[i][1], 0.0, 0.0, 0.0, omega[i]])
         return np.concatenate(ret, axis=0)
 
+    def vec_2d_to_3d(self, vec):
+        return np.array([vec[0], vec[1], 0.0])
+
+    def retrieve_velocities_from_generalized(self, generalized):
+        velocity = []
+        omega = []
+        for i in range(self.obj_num):
+            velocity.append(generalized[i][0:2])
+            omega.append(generalized[i][5])
+        velocity=np.array(velocity)
+        omega=np.array(omega)
+        return velocity, omega
+
     def get_external_force(self, mass):
         ret = []
         for i in range(self.obj_num):
             ret.append([0.0, -mass[i] * self.g, 0.0, 0.0, 0.0, 0.0])
         return np.concatenate(ret, axis=0)
 
-    def to_3d_vec(self, vec):
-        return np.array([vec[0], vec[1], 0.0])
-
-
-    def __call__(self, body_info, contact_info):
-        pos, velocity, omega, mass, inertia = self.extract_body_attr(body_info)
-        contact, normal, manifold = self.extract_contact_attr(contact_info)
-        # pos, velocity, angular_v, mass, inertia, conn, manifold
-        jacobian, bias, obj_idx=self.get_jacobian_with_bias(pos, velocity, omega, contact, normal, manifold)
-
-        eta=bias/self.dt - self.sparse_dot_vec(jacobian, velocity/self.dt + self.get_inv_mass_dot_fext(mass), obj_idx)
-        return self.PGS_solve(jacobian, mass, inertia, eta, obj_idx, self.solve_iters)
-
     def extract_body_attr(self, body_info):
         pos = []
         velocity=[]
-        alpha=[]
+        theta=[]
         omega=[]
         mass=[]
         inertia=[]
         for id, info in enumerate(body_info['bodies']):
             pos.append(np.array([info['pos_x'], info['pos_y'], 0.0]))
             velocity.append(np.array([info['velocity_x'], info['velocity_y'], 0.0]))
-            omega.append(np.array([0.0,0.0,info['angular_velocity']]))
+            theta.append(info['angle'])
+            omega.append(info['angular_velocity'])
             mass.append(info['mass'])
             inertia.append(info['inertia'])
         pos=np.stack(pos, axis=0)
         velocity=np.stack(velocity, axis=0)
+        theta=np.stack(theta, axis=0)
         omega=np.stack(omega, axis=0)
         mass=np.stack(mass, axis=0)
         inertia=np.stack(inertia, axis=0)
-        return pos, velocity, omega, mass, inertia
+        return pos, velocity, theta, omega, mass, inertia
 
     def extract_contact_attr(self, contact_info):
         contact=[]
         normal=[]
         manifold=[]
-        for id, info in enumerate(contact_info['contacts']):
-            contact.append(np.array(info['body_a'], info['body_b']))
-            normal.append(info['manifold_normal'])
-            print('manifold special treatment needed')
-            assert(0)
-            manifold.append(info['points'][0])
-        contact=np.stack(contact, axis=0)
-        normal=np.stack(normal, axis=0)
-        manifold=np.stack(manifold, axis=0)
+        if len(contact_info['contacts'])==0:
+            contact = np.zeros([0,2])
+            normal = np.zeros([0,3])
+            manifold = np.zeros([0,3])
+        else:
+            for id, info in enumerate(contact_info['contacts']):
+                contact.append(np.array(info['body_a'], info['body_b']))
+                normal.append(self.vec_2d_to_3d(info['manifold_normal']))
+                if info['point_count']==2:
+                    manifold_2d=(info['points'][0]+info['points'][1])/2
+                elif info['point_count']==1:
+                    manifold_2d=info['points'][0]
+                else:
+                    raise RuntimeError()
+                manifold.append(self.vec_2d_to_3d(manifold_2d))
+            contact=np.stack(contact, axis=0)
+            normal=np.stack(normal, axis=0)
+            manifold=np.stack(manifold, axis=0)
         return contact, normal, manifold
 
-    def get_jacobian_with_bias(self, pos, velocity, omega, contact, normal, manifold):
+    def assemble_obj_attr(self, pos_next, theta_next, velocity_next, omega_next):
+        obj_attr = []
+        for i in range(self.obj_num):
+            obj_attr.append({'theta': theta_next[i], 'x': pos_next[i][0], 'y': pos_next[i][1],
+                             'omega': omega_next[i], 'vx': velocity_next[i][0], 'vy': velocity_next[i][1]})
+        return obj_attr
 
+    def get_jacobian_with_bias(self, pos, velocity, omega, contact, normal, manifold):
+        # jacobian: s x 12
+        #
         jacobian = []
         obj_idx=[]
         bias=[]
@@ -96,19 +135,22 @@ class CollisionSolver():
 
             vn=np.dot(velocity[idx2]+np.cross(omega[idx2], manifold[i]-pos[idx2])-velocity[idx1]-np.cross(omega[idx1], manifold[i]-pos[idx1]))
             bias.append(self.restitution * vn)
-        jacobian=np.stack(jacobian, axis=0)
-        obj_idx=np.stack(obj_idx, axis=0)
+        if len(jacobian)==0:
+            jacobian = np.zeros([0,12])
+            obj_idx = np.zeros([0,2])
+        else:
+            jacobian=np.stack(jacobian, axis=0)
+            obj_idx=np.stack(obj_idx, axis=0)
         bias=np.array(bias)
         return jacobian, bias, obj_idx
 
-    def get_inv_mass_dot_fext(self, mass):
-        f_ext=self.get_external_force(mass)
+    def get_inv_mass_dot_vec(self, vec):
         for i in range(self.obj_num):
-            f_ext[i*self.gv_channel, i*self.gv_channel+self.v_channel]/=mass[i]
-        return f_ext
+            vec[i*self.gv_channel, i*self.gv_channel+self.v_channel]/=vec[i]
+        return vec
 
     def sparse_dot_vec(self, jacobian, vec, obj_idx):
-        # J: s x 6
+        # J: s x 12
         # vec: n x 3
         # ret: s
         s = jacobian.shape[0]
@@ -154,6 +196,8 @@ class CollisionSolver():
         # eta: s
         # obj_idx: s x 2
         constraint_cnt=jacobian.shape[0]
+        if constraint_cnt==0:
+            return np.zeros([0])
         force=self.get_initial_force()
         B_T=self.sparse_dot_inv_mass(jacobian, mass, inertia, obj_idx)
         # B_T: s x 6
