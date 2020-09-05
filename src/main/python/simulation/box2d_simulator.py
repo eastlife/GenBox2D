@@ -27,11 +27,26 @@ class Box2DContactListener (b2ContactListener):
         pass
 
     def PreSolve(self, contact, oldManifold):
+        print('dir contact:', dir(contact))
+        print('dir manifold:', dir(contact.manifold))
+        print('dir world manifold:', dir(contact.worldManifold))
+        print('contact.manifold: ', contact.manifold)
+        print('contact.manifold.localnormal: ', contact.manifold.localNormal)
+        print('contact.worldManifold.normal: ', contact.worldManifold.normal)
+        print('contact.worldManifold.points: ', contact.worldManifold.points)
+        print('contact.worldManifold: ', contact.worldManifold)
+        exit()
+        if not (abs(contact.worldManifold.normal[0])<1e-8 and abs(contact.worldManifold.normal[1])<1e-8):
+            print('@simulator presolve nonzero normal detected')
+            exit()
         pass
 
     def PostSolve(self, contact, impulse):
         # print(contact)
         # print(impulse)
+        if not (abs(contact.worldManifold.normal[0])<1e-8 and abs(contact.worldManifold.normal[1])<1e-8):
+            print('@simulator postsolve nonzero normal detected')
+            exit()
         contact_info = self.log_contact(contact, impulse)
         self.contacts.append(contact_info)
     
@@ -40,8 +55,17 @@ class Box2DContactListener (b2ContactListener):
         json_contact = {}
         json_contact["body_a"] = self._find_body(contact.fixtureA.body)
         json_contact["body_b"] = self._find_body(contact.fixtureB.body)
+        #print(dir(contact.manifold))
+        #print(contact.worldManifold.normal)
+        #exit()
+        box2d_normal=contact.worldManifold.normal
+        json_contact["manifold_normal"] = (box2d_normal[0], box2d_normal[1])
+        box2d_centerA=contact.fixtureA.massData.center
+        json_contact["fixture_a_center"] = (box2d_centerA[0], box2d_centerA[1])
+        box2d_centerB=contact.fixtureB.massData.center
+        json_contact["fixture_b_center"] = (box2d_centerB[0], box2d_centerB[1])
+
         json_contact["point_count"] = contact.manifold.pointCount
-        json_contact["manifold_normal"] = (contact.worldManifold.normal[0], contact.worldManifold.normal[1])
 
         json_contact["points"] = contact.worldManifold.points
 
@@ -54,6 +78,13 @@ class Box2DContactListener (b2ContactListener):
             return self.bodies.index(body)
         else:
             return -1
+
+    def _find_fixture(self, body, fixture):
+        if fixture in body.fixtures:
+            return body.fixtures.index(fixture)
+        else:
+            return -1
+        # should include boundary in self.bodies
 
 
 
@@ -88,7 +119,7 @@ class Box2DSimulator (Framework):
         self.SCENE_WIDTH = properties.SCENE_WIDTH
         self.SCENE_HEIGHT = properties.SCENE_HEIGHT
 
-        self._create_boundaries()
+        #self._create_boundaries()
 
         self.task_idx = 0
         self.task = None
@@ -127,6 +158,8 @@ class Box2DSimulator (Framework):
              (self.SCENE_WIDTH / 2, -self.SCENE_HEIGHT / 2),
              (-self.SCENE_WIDTH / 2, -self.SCENE_HEIGHT / 2)]
         )
+        self.bodies.append(ground)
+
 
     def load_task(self):
         if self.task_idx >= len(self.tasks) or self.task_idx < 0:
@@ -134,6 +167,7 @@ class Box2DSimulator (Framework):
         self.task = self.tasks[self.task_idx]
 
         print("**Loading task: {task_id}**".format(task_id = self.task.task_id))
+        self._create_boundaries()
         for featurized_object in self.task.featurized_objects:
             shape = featurized_object.shape
             print("shape: " + shape)
@@ -336,8 +370,8 @@ class Box2DSimulator (Framework):
         for idx, body in enumerate(self.bodies):
             json_body = {}
             json_body["idx"] = idx
-            json_body["pos_x"] = body.position[0]
-            json_body["pos_y"] = body.position[1]
+            json_body["pos_x"] = body.worldCenter[0]
+            json_body["pos_y"] = body.worldCenter[1]
             json_body["angle"] = body.angle
             json_body["velocity_x"] = body.linearVelocity[0]
             json_body["velocity_y"] = body.linearVelocity[1]
